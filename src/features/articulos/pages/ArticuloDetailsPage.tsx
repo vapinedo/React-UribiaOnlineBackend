@@ -2,37 +2,24 @@ import { useEffect, useState } from "react";
 import BoxShadow from "@layouts/BoxShadow";
 import { useParams } from "react-router-dom";
 import { getDoc } from "firebase/firestore";
-import useDatetime from "@app/hooks/useDatetime";
-import usePrestamoStore from "@app/stores/usePrestamoStore";
+import useArticuloStore from "@stores/useArticuloStore";
+import { Articulo } from "../models/Articulo";
 
 export default function PrestamoDetailsPage() {
     const params = useParams();
-    const { getHumanDate } = useDatetime();
-    const { getPrestamo, loading, error } = usePrestamoStore();
-    const [prestamo, setPrestamo] = useState<any>(null);
-    const [cliente, setCliente] = useState<any>(null);
-    const [empleado, setEmpleado] = useState<any>(null);
+    const [barrio, setBarrio] = useState<any>(null);
+    const [articulo, setArticulo] = useState<Articulo | undefined>(undefined);
+    const { getArticulo, loading, error } = useArticuloStore();
 
     useEffect(() => {
-        const prestamoId = params.id;
-        if (prestamoId) {
-            const newPrestamo = getPrestamo(prestamoId);
-            setPrestamo(newPrestamo);
-            if (newPrestamo?.clienteRef) {
-                getDoc(newPrestamo.clienteRef).then((doc) => {
+        const articuloId = params.id;
+        if (articuloId) {
+            const nuevoArticulo = getArticulo(articuloId);
+            setArticulo(nuevoArticulo);
+            if (nuevoArticulo?.barrioRef) {
+                getDoc(nuevoArticulo.barrioRef).then((doc) => {
                     if (doc.exists()) {
-                        setCliente(doc.data());
-                    } else {
-                        console.log("No such document!");
-                    }
-                }).catch((error) => {
-                    console.error("Error getting document:", error);
-                });
-            }
-            if (newPrestamo?.empleadoRef) {
-                getDoc(newPrestamo.empleadoRef).then((doc) => {
-                    if (doc.exists()) {
-                        setEmpleado(doc.data());
+                        setBarrio(doc.data());
                     } else {
                         console.log("No such document!");
                     }
@@ -41,19 +28,19 @@ export default function PrestamoDetailsPage() {
                 });
             }
         }
-    }, [getPrestamo, params.id]);
+    }, [getArticulo, params.id]);
 
     return (
         <BoxShadow>
             <header className="d-flex justify-content-between align-items-center">
-                <h2>Detalles del prestamo</h2>
+                <h2>Detalles del articulo</h2>
             </header>
 
             {loading ? (
-                <p>Cargando prestamo...</p>
+                <p>Cargando articulo...</p>
             ) : error ? (
-                <p>Error al cargar prestamo: {error}</p>
-            ) : prestamo ? (
+                <p>Error al cargar articulo: {error}</p>
+            ) : articulo ? (
                 <div className="mt-4">
                     <div className="row">
                         <div className="col-md-12">
@@ -61,35 +48,15 @@ export default function PrestamoDetailsPage() {
                                 <tbody>
                                     <tr>
                                         <th>Cliente</th>
-                                        <td>{cliente?.nombres} {cliente?.apellidos}</td>
+                                        <td>{barrio?.nombres} {barrio?.apellidos}</td>
                                     </tr>
                                     <tr>
-                                        <th>Empleado Responsable</th>
-                                        <td>{empleado?.nombres} {empleado?.apellidos}</td>
+                                        <th>Nombre del articulo</th>
+                                        <td>{articulo?.nombre}</td>
                                     </tr>
                                     <tr>
-                                        <th>Valor prestado</th>
-                                        <td>{prestamo?.monto_prestado}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Interés</th>
-                                        <td>{prestamo?.interes}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Estado</th>
-                                        <td>{prestamo?.estado}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Modo de pago</th>
-                                        <td>{prestamo?.modalidadDePago}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Fecha inicial</th>
-                                        <td>{getHumanDate(prestamo?.fechaInicio)}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Fecha límite</th>
-                                        <td>{getHumanDate(prestamo?.fechaFinal)}</td>
+                                        <th>Estado articulo</th>
+                                        <td>{articulo?.estadoArticulo}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -97,7 +64,7 @@ export default function PrestamoDetailsPage() {
                     </div>
                 </div>
             ) : (
-                <p>No se encontró prestamo con ID {params.id}</p>
+                <p>No se encontró articulo con ID {params.id}</p>
             )}
         </BoxShadow>
     )

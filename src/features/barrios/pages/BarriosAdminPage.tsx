@@ -15,13 +15,13 @@ export default function BarriossAdminPage() {
     barrios,
     loading,
     error,
-    getAllBarrios,
+    fetchBarrios,
     deleteBarrio,
   } = useBarrioStore();
 
   useEffect(() => {
-    getAllBarrios();
-  }, [getAllBarrios]);
+    fetchBarrios();
+  }, [fetchBarrios]);
 
   const handleActions = (params: any) => (
     <>
