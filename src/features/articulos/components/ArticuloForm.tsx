@@ -101,29 +101,18 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
     };
 
     const handleFileUpload = async (files: FileList) => {
-        const file = files[0];
-        const storageRef = ref(storage, `articulo_images/${file.name}`);
-        const uploadTask = uploadBytesResumable(storageRef, file);
-
-        uploadTask.on(
-            "state_changed",
-            (snapshot) => {
-                // Manejar el progreso de la carga si es necesario
-            },
-            (error) => {
+        Array.from(files).forEach(async (file) => {
+            const storageRef = ref(storage, `${file.name}`);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+        
+            try {
+                const snapshot = await uploadTask;
+                const downloadURL = await getDownloadURL(snapshot.ref);
+                setValue('imagenURLs', [...getValues('imagenURLs'), downloadURL]);
+            } catch (error) {
                 console.error("Error al cargar la imagen:", error);
-            },
-            async () => {
-                // La carga se completó exitosamente
-                try {
-                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                    // Actualizar el estado del formulario o del artículo con la URL
-                    setValue('imagenURLs', [...getValues('imagenURLs'), downloadURL]);
-                } catch (error) {
-                    console.error("Error al obtener la URL de descarga:", error);
-                }
             }
-        );
+        });
     };
 
     const onSubmit = async (articulo: Articulo) => {
