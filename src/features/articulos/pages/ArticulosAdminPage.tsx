@@ -89,7 +89,7 @@ export default function ArticulosAdminPage() {
     {
       field: 'nombre',
       headerName: 'Nombre',
-      width: 170,
+      width: 300,
       editable: true,
       renderCell: handleDetails,
     },
@@ -102,13 +102,13 @@ export default function ArticulosAdminPage() {
     {
       field: 'estadoArticulo',
       headerName: 'Estado articulo',
-      width: 230,
+      width: 180,
       editable: true,
     },
     {
       field: 'estadoPublicacion',
       headerName: 'Estado publicación',
-      width: 230,
+      width: 180,
       editable: true,
       renderCell: ({ row }) => {
         const className = getClassByState(row.estadoPublicacion);
