@@ -44,6 +44,7 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
     const { barrios, fetchBarrios } = useBarrioStore();
+    const [imagenPreviews, setImagenPreviews] = useState([]);
     const [barrio, setBarrio] = useState<Barrio | null>(null);
     const { createArticulo, updateArticulo, getArticulo, loading, error } = useArticuloStore();
 
@@ -100,11 +101,30 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
         }
     };
 
+    const handleFileChange = (e) => {
+        const files = e.target.files;
+        const previews = [];
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                previews.push(e.target.result);
+                if (previews.length === files.length) {
+                    setImagenPreviews(previews);
+                }
+            };
+
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleFileUpload = async (files: FileList) => {
         Array.from(files).forEach(async (file) => {
             const storageRef = ref(storage, `${file.name}`);
             const uploadTask = uploadBytesResumable(storageRef, file);
-        
+
             try {
                 const snapshot = await uploadTask;
                 const downloadURL = await getDownloadURL(snapshot.ref);
@@ -113,6 +133,11 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
                 console.error("Error al cargar la imagen:", error);
             }
         });
+    };
+
+    const handleFileChangeAndUpload = (e) => {
+        handleFileChange(e);
+        handleFileUpload(e.target.files);
     };
 
     const onSubmit = async (articulo: Articulo) => {
@@ -213,7 +238,12 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
 
                     <div className="col-md-6">
                         <div className="col-md-12 mb-3">
-                            <input type="file" multiple onChange={(e) => handleFileUpload(e.target.files)} />
+                            <input type="file" multiple onChange={handleFileChangeAndUpload} />
+                            <div>
+                                {imagenPreviews.map((preview, index) => (
+                                    <img key={index} src={preview} alt={`Imagen ${index}`} style={{ maxWidth: '100px', maxHeight: '100px', marginRight: '10px' }} />
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
