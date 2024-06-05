@@ -3,26 +3,26 @@ import BoxShadow from "@layouts/BoxShadow";
 import { useEffect, useState } from "react";
 import { getDoc } from "firebase/firestore";
 import useDatetime from "@hooks/useDatetime";
-import usePrestamoStore from "@stores/usePrestamoStore";
+import useArticulosStore from "@stores/useArticulosStore";
 import { NavLink, useNavigate } from "react-router-dom";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 import useNotification from '@services/useNotificationService';
-import { Prestamo } from "@features/prestamos/models/Prestamo";
+import { Articulos } from "@features/articulos/models/Articulos";
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
-import usePrestamoHelper from "../helpers/usePrestamoHelper";
+import useArticuloHelper from "@features/articulos/helpers/useArticuloHelper";
 
-export default function PrestamosAdminPage() {
+export default function ArticulosAdminPage() {
   const navigate = useNavigate();
   const { differenceInDays } = useDatetime();
   const { dialogConfirm } = useNotification();
-  const { getClassByState } = usePrestamoHelper();
-  const { prestamos, loading, error, fetchPrestamos, deletePrestamo } = usePrestamoStore();
+  const { getClassByState } = useArticuloHelper();
+  const { prestamos, loading, error, fetchPrestamos, deletePrestamo } = useArticulosStore();
 
-  const [prestamosData, setPrestamosData] = useState<Prestamo[]>([]);
+  const [prestamosData, setPrestamosData] = useState<Articulos[]>([]);
 
   useEffect(() => {
     const fetchRelatedData = async () => {
-      const prestamosConNombres: Prestamo[] = await Promise.all(
+      const prestamosConNombres: Articulos[] = await Promise.all(
         prestamos.map(async (prestamo) => {
           let clienteNombre = '';
           let empleadoNombre = '';

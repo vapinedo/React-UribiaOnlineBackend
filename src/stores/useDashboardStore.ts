@@ -1,13 +1,11 @@
 import { create } from 'zustand';
+import useBarrioStore from '@stores/useBarrioStore';
+import useArticuloStore from '@stores/useArticuloStore';
 import { PersistStorage, persist } from 'zustand/middleware';
-import useClienteStore from './useClienteStore';
-import useEmpleadoStore from './useEmpleadoStore';
-import usePrestamoStore from './usePrestamoStore';
 
 interface DashboardStore {
-    totalClientes: number;
-    totalEmpleados: number;
-    totalPrestamos: number;
+    totalBarrios: number;
+    totalArticulos: number;
     loading: boolean;
     error: string | null;
     fetchTotals: () => Promise<void>;
@@ -34,9 +32,8 @@ const storage: PersistStorage<DashboardStore> = {
 const useDashboardStore = create<DashboardStore>()(
     persist(
         (set) => ({
-            totalClientes: 0,
-            totalEmpleados: 0,
-            totalPrestamos: 0,
+            totalBarrios: 0,
+            totalArticulos: 0,
             loading: false,
             error: null,
 
@@ -44,14 +41,12 @@ const useDashboardStore = create<DashboardStore>()(
                 try {
                     set({ loading: true, error: null });
                     await Promise.all([
-                        useClienteStore.getState().getTotalRecords(),
-                        useEmpleadoStore.getState().getTotalRecords(),
-                        usePrestamoStore.getState().getTotalRecords(),
+                        useBarrioStore.getState().getTotalRecords(),
+                        useArticuloStore.getState().getTotalRecords(),
                     ]);
-                    const totalClientes = useClienteStore.getState().totalRecords;
-                    const totalEmpleados = useEmpleadoStore.getState().totalRecords;
-                    const totalPrestamos = usePrestamoStore.getState().totalRecords;
-                    set({ totalClientes, totalEmpleados, totalPrestamos, loading: false });
+                    const totalBarrios = useBarrioStore.getState().totalRecords;
+                    const totalArticulos = useArticuloStore.getState().totalRecords;
+                    set({ totalBarrios, totalArticulos, loading: false });
                 } catch (error) {
                     set({ loading: false, error: 'Error al obtener los totales' });
                     console.error(error);

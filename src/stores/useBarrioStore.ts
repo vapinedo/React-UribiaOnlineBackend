@@ -1,40 +1,39 @@
 import { create } from 'zustand';
-import { Cliente } from '@features/clientes/models/Cliente';
-import useClienteService from '@services/useClienteService';
+import { Barrio } from '@features/barrios/models/Barrio';
 import { PersistStorage, persist } from 'zustand/middleware';
+import useBarrioService from '@app/services/useBarrioService';
 import { AutocompleteOption } from '@models/AutocompleteOption';
 
-// Crear instancia única del servicio de clientes
-const clienteService = useClienteService();
+const barrioService = useBarrioService();
 
-interface ClienteStore {
-  clientes: Cliente[];
-  clienteOptions: AutocompleteOption[];
+interface BarrioStore {
+  barrios: Barrio[];
+  barrioOptions: AutocompleteOption[];
   totalRecords: number;
   loading: boolean;
   error: string | null;
-  fetchClientes: () => Promise<void>;
-  getClienteOptions: () => Promise<void>;
-  getCliente: (id: string) => Cliente | undefined;
-  createCliente: (cliente: Cliente) => Promise<void>;
-  updateCliente: (cliente: Cliente) => Promise<void>;
-  deleteCliente: (id: string) => Promise<void>;
+  fetchBarrios: () => Promise<void>;
+  getBarrioOptions: () => Promise<void>;
+  getBarrio: (id: string) => Barrio | undefined;
+  createBarrio: (barrio: Barrio) => Promise<void>;
+  updateBarrio: (barrio: Barrio) => Promise<void>;
+  deleteBarrio: (id: string) => Promise<void>;
   getTotalRecords: () => Promise<void>;
 }
 
-const serialize = (document: Cliente): any => {
+const serialize = (document: Barrio): any => {
   return {
     ...document,
   };
 };
 
-const deserialize = (prestamo: any): Cliente => {
+const deserialize = (prestamo: any): Barrio => {
   return {
     ...prestamo,
   };
 };
 
-const storage: PersistStorage<ClienteStore> = {
+const storage: PersistStorage<BarrioStore> = {
   getItem: (name) => {
     const item = sessionStorage.getItem(name);
     if (item) {
@@ -43,7 +42,7 @@ const storage: PersistStorage<ClienteStore> = {
         ...parsed,
         state: {
           ...parsed.state,
-          clientes: parsed.state.clientes.map(deserialize),
+          barrios: parsed.state.barrios.map(deserialize),
         },
       };
     }
@@ -54,7 +53,7 @@ const storage: PersistStorage<ClienteStore> = {
       ...value,
       state: {
         ...value.state,
-        clientes: value.state.clientes.map(serialize),
+        barrios: value.state.barrios.map(serialize),
       },
     });
     sessionStorage.setItem(name, serializedState);
@@ -62,47 +61,47 @@ const storage: PersistStorage<ClienteStore> = {
   removeItem: (name) => sessionStorage.removeItem(name),
 };
 
-const useClienteStore = create<ClienteStore>()(
+const useBarrioStore = create<BarrioStore>()(
   persist(
     (set, get) => ({
-      clientes: [],
-      clienteOptions: [],
+      barrios: [],
+      barrioOptions: [],
       totalRecords: 0,
       loading: false,
       error: null,
 
-      fetchClientes: async () => {
+      fetchBarrios: async () => {
         try {
           set({ loading: true, error: null });
-          const clientes = await clienteService.getAllClientes();
-          set({ clientes, clienteOptions: [], loading: false });
+          const barrios = await barrioService.getAllBarrios();
+          set({ barrios, barrioOptions: [], loading: false });
         } catch (error) {
-          set({ loading: false, error: 'Error al obtener los clientes' });
+          set({ loading: false, error: 'Error al obtener los barrios' });
           console.error(error);
         }
       },
 
-      getClienteOptions: async () => {
+      getBarrioOptions: async () => {
         try {
           set({ loading: true, error: null });
-          const clienteOptions = await clienteService.getClienteOptions();
-          set({ clientes: [], clienteOptions, loading: false });
+          const barrioOptions = await barrioService.getBarrioOptions();
+          set({ barrios: [], barrioOptions, loading: false });
         } catch (error) {
-          set({ loading: false, error: 'Error al obtener opciones de clientes' });
+          set({ loading: false, error: 'Error al obtener opciones de barrios' });
           console.error(error);
         }
       },
 
-      getCliente: (id: string) => {
-        const { clientes } = get();
-        return clientes.find(cliente => cliente.id === id);
+      getBarrio: (id: string) => {
+        const { barrios } = get();
+        return barrios.find(barrio => barrio.id === id);
       },
 
-      createCliente: async (cliente: Cliente) => {
+      createBarrio: async (barrio: Barrio) => {
         set({ loading: true, error: null });
         try {
-          await clienteService.createCliente(cliente);
-          await get().fetchClientes();
+          await barrioService.createBarrio(barrio);
+          await get().fetchBarrios();
         } catch (error: unknown) {
           if (error instanceof Error) {
             set({ error: error.message, loading: false });
@@ -112,11 +111,11 @@ const useClienteStore = create<ClienteStore>()(
         }
       },
 
-      updateCliente: async (cliente: Cliente) => {
+      updateBarrio: async (barrio: Barrio) => {
         set({ loading: true, error: null });
         try {
-          await clienteService.updateCliente(cliente);
-          await get().fetchClientes();
+          await barrioService.updateBarrio(barrio);
+          await get().fetchBarrios();
         } catch (error: unknown) {
           if (error instanceof Error) {
             set({ error: error.message, loading: false });
@@ -126,11 +125,11 @@ const useClienteStore = create<ClienteStore>()(
         }
       },
 
-      deleteCliente: async (id: string) => {
+      deleteBarrio: async (id: string) => {
         set({ loading: true, error: null });
         try {
-            await clienteService.deleteCliente(id);
-            await get().fetchClientes();
+            await barrioService.deleteBarrio(id);
+            await get().fetchBarrios();
         } catch (error: unknown) {
             if (error instanceof Error) {
                 set({ error: error.message, loading: false });
@@ -143,20 +142,20 @@ const useClienteStore = create<ClienteStore>()(
       getTotalRecords: async () => {
         try {
           set({ loading: true, error: null });
-          const totalRecords = await clienteService.getTotalRecords();
+          const totalRecords = await barrioService.getTotalRecords();
           set({ totalRecords, loading: false });
         } catch (error) {
-          set({ loading: false, error: 'Error al obtener el total de clientes' });
+          set({ loading: false, error: 'Error al obtener el total de barrios' });
           console.error(error);
         }
       }
 
     }),
     {
-      name: "clientes-store",
+      name: "barrios-store",
       storage,
     }
   )
 );
 
-export default useClienteStore;
+export default useBarrioStore;

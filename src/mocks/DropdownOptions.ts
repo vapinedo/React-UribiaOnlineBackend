@@ -1,15 +1,6 @@
-export enum EstadoPrestamo {
-    Activo = "Activo",
-    CerradoExitoso = "Exitoso",
-    CerradoFallido = "Fallido",
+export enum EstadoArticulo {
+    Publicado = "Publicado",
+    NoPublicado = "No Publicado",
 }
 
-export enum ModalidadDePago {
-    Diario = "Diario",
-    Semanal = "Semanal",
-    Quincenal = "Quincenal",
-    TerminoFijo = "Termino Fijo",
-}
-
-export const estadoPrestamoOptions = Object.values(EstadoPrestamo);
-export const modalidadDePagoOptions = Object.values(ModalidadDePago);
+export const estadoPrestamoOptions = Object.values(EstadoArticulo);
