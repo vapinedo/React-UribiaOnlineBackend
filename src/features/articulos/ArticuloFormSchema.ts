@@ -1,8 +1,8 @@
 import * as yup from 'yup';
 
 const ArticuloFormSchema = yup.object().shape({
+    nombre: yup.string().required('Nombre es requerido'),
     barrioRef: yup.object().nullable().required('Barrio es requerido'),
-    estado: yup.string().required('Estado es requerido'),
 });
 
 export default ArticuloFormSchema;

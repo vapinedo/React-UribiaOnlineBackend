@@ -1,6 +1,12 @@
 export enum EstadoArticulo {
-    Publicado = "Publicado",
-    NoPublicado = "No Publicado",
+    Nuevo = "Nuevo",
+    Usado = "Usado",
 }
 
-export const estadoPrestamoOptions = Object.values(EstadoArticulo);
+export enum EstadoPublicacion {
+    Publicado = "Publicado",
+    NoPublicado = "No publicado",
+}
+
+export const estadoArticuloOptions = Object.values(EstadoArticulo);
+export const estadoPublicacionOptions = Object.values(EstadoPublicacion);
