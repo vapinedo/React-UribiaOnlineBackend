@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { PersistStorage, persist } from 'zustand/middleware';
-import useClienteStore from './useClienteStore';
+import useClienteStore from './useBarrioStore';
 import useEmpleadoStore from './useEmpleadoStore';
-import usePrestamoStore from './usePrestamoStore';
+import usePrestamoStore from './useArticuloStore';
 
 interface DashboardStore {
     totalClientes: number;

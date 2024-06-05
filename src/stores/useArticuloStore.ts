@@ -2,44 +2,41 @@ import { create } from "zustand";
 import { firebaseApp } from "@app/firebaseConfig";
 import { doc, getFirestore } from "firebase/firestore";
 import { persist, PersistStorage } from "zustand/middleware";
-import usePrestamoService from "@services/usePrestamoService";
-import { Prestamo } from "@features/prestamos/models/Prestamo";
+import useArticuloService from "@services/useArticuloService";
+import { Articulo } from "@features/articulos/models/Articulo";
 
-// crear instancia unica de servicio prestamo
-const prestamoService = usePrestamoService();
+const articuloService = useArticuloService();
 
-interface PrestamoStore {
-    prestamos: Prestamo[];
+interface ArticuloStore {
+    articulos: Articulo[];
     totalRecords: number;
     loading: boolean;
     error: string | null;
-    fetchPrestamos: () => Promise<void>;
-    getPrestamo: (id: string) => Prestamo | undefined;
-    createPrestamo: (prestamo: Prestamo) => Promise<void>;
-    updatePrestamo: (prestamo: Prestamo) => Promise<void>;
-    deletePrestamo: (id: string) => Promise<void>;
+    fetchArticulos: () => Promise<void>;
+    getArticulo: (id: string) => Articulo | undefined;
+    createArticulo: (articulo: Articulo) => Promise<void>;
+    updateArticulo: (articulo: Articulo) => Promise<void>;
+    delete: (id: string) => Promise<void>;
     getTotalRecords: () => Promise<void>;
 }
 
 const firestore = getFirestore(firebaseApp);
 
-const serializePrestamo = (prestamo: Prestamo): any => {
+const serialize = (articulo: Articulo): any => {
     return {
-        ...prestamo,
-        clienteRef: prestamo.clienteRef?.path || null,
-        empleadoRef: prestamo.empleadoRef?.path || null,
+        ...articulo,
+        barrioRef: articulo.barrioRef?.path || null,
     };
 };
 
-const deserializePrestamo = (prestamo: any): Prestamo => {
+const deserialize = (articulo: any): Articulo => {
     return {
-        ...prestamo,
-        clienteRef: prestamo.clienteRef ? doc(firestore, prestamo.clienteRef) : null,
-        empleadoRef: prestamo.empleadoRef ? doc(firestore, prestamo.empleadoRef) : null,
+        ...articulo,
+        barrioRef: articulo.barrioRef ? doc(firestore, articulo.barrioRef) : null,
     };
 };
 
-const storage: PersistStorage<PrestamoStore> = {
+const storage: PersistStorage<ArticuloStore> = {
     getItem: (name) => {
         const item = sessionStorage.getItem(name);
         if (item) {
@@ -48,7 +45,7 @@ const storage: PersistStorage<PrestamoStore> = {
                 ...parsed,
                 state: {
                     ...parsed.state,
-                    prestamos: parsed.state.prestamos.map(deserializePrestamo),
+                    articulos: parsed.state.articulos.map(deserialize),
                 },
             };
         }
@@ -59,7 +56,7 @@ const storage: PersistStorage<PrestamoStore> = {
             ...value,
             state: {
                 ...value.state,
-                prestamos: value.state.prestamos.map(serializePrestamo),
+                articulos: value.state.articulos.map(serialize),
             },
         });
         sessionStorage.setItem(name, serializedState);
@@ -67,19 +64,19 @@ const storage: PersistStorage<PrestamoStore> = {
     removeItem: (name) => sessionStorage.removeItem(name),
 };
 
-const usePrestamoStore = create<PrestamoStore>()(
+const useArticuloStore = create<ArticuloStore>()(
     persist(
         (set, get) => ({
-            prestamos: [],
+            articulos: [],
             totalRecords: 0,
             loading: false,
             error: null,
 
-            fetchPrestamos: async () => {
+            fetchArticulos: async () => {
                 set({ loading: true, error: null });
                 try {
-                    const prestamos = await prestamoService.getAllPrestamos();
-                    set({ prestamos, loading: false });
+                    const articulos = await articuloService.getAllArticulos();
+                    set({ articulos, loading: false });
                 } catch (error: unknown) {
                     if (error instanceof Error) {
                         set({ error: error.message, loading: false });
@@ -89,16 +86,16 @@ const usePrestamoStore = create<PrestamoStore>()(
                 }
             },
 
-            getPrestamo: (id: string) => {
-                const { prestamos } = get();
-                return prestamos.find(prestamo => prestamo.id === id);
+            getArticulo: (id: string) => {
+                const { articulos } = get();
+                return articulos.find(articulo => articulo.id === id);
             },
 
-            createPrestamo: async (prestamo: Prestamo) => {
+            createArticulo: async (articulo: Articulo) => {
                 set({ loading: true, error: null });
                 try {
-                    await prestamoService.createPrestamo(prestamo);
-                    await get().fetchPrestamos();
+                    await articuloService.createArticulo(articulo);
+                    await get().fetchArticulos();
                 } catch (error: unknown) {
                     if (error instanceof Error) {
                         set({ error: error.message, loading: false });
@@ -108,12 +105,11 @@ const usePrestamoStore = create<PrestamoStore>()(
                 }
             },
 
-            updatePrestamo: async (prestamo: Prestamo) => {
+            updateArticulo: async (articulo: Articulo) => {
                 set({ loading: true, error: null });
                 try {
-                    await prestamoService.updatePrestamo(prestamo);
-                    // Fetch the updated list of prestamos
-                    await get().fetchPrestamos();
+                    await articuloService.updateArticulo(articulo);
+                    await get().fetchArticulos();
                 } catch (error: unknown) {
                     if (error instanceof Error) {
                         set({ error: error.message, loading: false });
@@ -123,12 +119,11 @@ const usePrestamoStore = create<PrestamoStore>()(
                 }
             },
 
-            deletePrestamo: async (id: string) => {
+            delete: async (id: string) => {
                 set({ loading: true, error: null });
                 try {
-                    await prestamoService.deletePrestamo(id);
-                    // Fetch the updated list of prestamos
-                    await get().fetchPrestamos();
+                    await articuloService.deleteArticulo(id);
+                    await get().fetchArticulos();
                 } catch (error: unknown) {
                     if (error instanceof Error) {
                         set({ error: error.message, loading: false });
@@ -141,20 +136,20 @@ const usePrestamoStore = create<PrestamoStore>()(
             getTotalRecords: async () => {
                 try {
                     set({ loading: true, error: null });
-                    const totalRecords = await prestamoService.getTotalRecords();
+                    const totalRecords = await articuloService.getTotalRecords();
                     set({ totalRecords, loading: false });
                 } catch (error) {
-                    set({ loading: false, error: 'Error al obtener el total de prestamos' });
+                    set({ loading: false, error: 'Error al obtener el total de articulos' });
                     console.error(error);
                 }
             }
 
         }),
         {
-            name: "prestamos-store",
+            name: "articulos-store",
             storage,
         }
     )
 );
 
-export default usePrestamoStore;
+export default useArticuloStore;

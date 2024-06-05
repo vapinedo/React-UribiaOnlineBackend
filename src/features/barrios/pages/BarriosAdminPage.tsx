@@ -1,44 +1,34 @@
 import { useEffect } from 'react';
 import { Box } from '@mui/material';
 import BoxShadow from '@layouts/BoxShadow';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import useBarrioStore from '@app/stores/useBarrioStore';
 import { IconEdit, IconTrash } from '@tabler/icons-react';
-import useEmpleadoStore from '@app/stores/useEmpleadoStore';
 import useNotification from '@services/useNotificationService';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 
-export default function EmpleadosAdminPage() {
+export default function BarriossAdminPage() {
   const navigate = useNavigate();
   const { dialogConfirm } = useNotification();
 
   const {
-    empleados,
+    barrios,
     loading,
     error,
-    fetchEmpleados,
-    deleteEmpleado,
-  } = useEmpleadoStore();
+    getAllBarrios,
+    deleteBarrio,
+  } = useBarrioStore();
 
   useEffect(() => {
-    fetchEmpleados(); // Cargar empleados al montar el componente
-  }, [fetchEmpleados]);
-
-  const handleDetails = (params: any) => (
-    <NavLink
-      title="Ver detalles"
-      className="grid-table-linkable-column"
-      to={`/empleados/detalles/${params.id}`}
-    >
-      {params.formattedValue}
-    </NavLink>
-  );
+    getAllBarrios();
+  }, [getAllBarrios]);
 
   const handleActions = (params: any) => (
     <>
       <IconEdit
         color="#00abfb"
         cursor="pointer"
-        onClick={() => navigate(`/empleados/editar/${params.id}`)}
+        onClick={() => navigate(`/barrios/editar/${params.id}`)}
       />
       <IconTrash
         color="#ff2825"
@@ -50,43 +40,18 @@ export default function EmpleadosAdminPage() {
   );
 
   const handleDelete = async (params: any) => {
-    const text = `Vas a eliminar a ${params.row.nombres} ${params.row.apellidos}`;
+    const text = `Vas a eliminar el barrio ${params.row.nombre}`;
     const { isConfirmed } = await dialogConfirm(text);
     if (isConfirmed) {
-      deleteEmpleado(params.row.id);
+      deleteBarrio(params.row.id);
     }
   };
 
   const columns: GridColDef[] = [
     {
-      field: 'nombres',
+      field: 'nombre',
       headerName: 'Nombre',
       width: 150,
-      editable: true,
-      renderCell: handleDetails,
-    },
-    {
-      field: 'apellidos',
-      headerName: 'Apellidos',
-      width: 150,
-      editable: true,
-    },
-    {
-      field: 'correo',
-      headerName: 'Correo',
-      width: 110,
-      editable: true,
-    },
-    {
-      field: 'celular',
-      headerName: 'Celular',
-      width: 110,
-      editable: true,
-    },
-    {
-      field: 'direccion',
-      headerName: 'Dirección',
-      width: 280,
       editable: true,
     },
     {
@@ -98,21 +63,21 @@ export default function EmpleadosAdminPage() {
   return (
     <BoxShadow>
       <header className="d-flex justify-content-between align-items-center">
-        <h2>Lista de Empleados</h2>
-        <button onClick={() => navigate('/empleados/nuevo')} className="btn btn-primary">
-          Crear empleado
+        <h2>Lista de Barrios</h2>
+        <button onClick={() => navigate('/barrios/nuevo')} className="btn btn-primary">
+          Crear barrio
         </button>
       </header>
 
       <Box sx={{ height: '100%', width: '100%', marginTop: 3 }}>
         {loading ? (
-          <p>Cargando empleados...</p>
+          <p>Cargando barrios...</p>
         ) : error ? (
-          <p>Ocurrió un error al cargar los empleados.</p>
+          <p>Ocurrió un error al cargar los barrios.</p>
         ) : (
           <DataGrid
             pagination
-            rows={empleados}
+            rows={barrios}
             columns={columns}
             density="compact"
             checkboxSelection
