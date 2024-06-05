@@ -33,7 +33,7 @@ export default function PrestamoDetailsPage() {
     return (
         <BoxShadow>
             <header className="d-flex justify-content-between align-items-center">
-                <h2>Detalles del articulo</h2>
+                <h2>{articulo?.nombre}</h2>
             </header>
 
             {loading ? (
@@ -41,25 +41,13 @@ export default function PrestamoDetailsPage() {
             ) : error ? (
                 <p>Error al cargar articulo: {error}</p>
             ) : articulo ? (
-                <div className="mt-4">
+                <div className="mt-3">
                     <div className="row">
-                        <div className="col-md-12">
-                            <table className="table table-striped">
-                                <tbody>
-                                    <tr>
-                                        <th>Cliente</th>
-                                        <td>{barrio?.nombres} {barrio?.apellidos}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Nombre del articulo</th>
-                                        <td>{articulo?.nombre}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Estado articulo</th>
-                                        <td>{articulo?.estadoArticulo}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div className="col-md-6">
+                            <p>{articulo?.precio}</p>
+                        </div>
+                        <div className="col-md-6">
+                            <img src={articulo.imagenURLs[0]} width={350} alt={articulo?.nombre} />
                         </div>
                     </div>
                 </div>

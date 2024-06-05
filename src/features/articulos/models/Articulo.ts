@@ -6,6 +6,7 @@ export interface Articulo {
     nombre: string;
     precio: string;
     audit: AuditData;
+    imagenURLs: string[];
     estadoArticulo: string;
     estadoPublicacion: string;
     descripcion: string | null;

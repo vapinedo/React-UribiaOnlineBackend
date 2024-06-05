@@ -1,10 +1,9 @@
-// import dayjs from 'dayjs';
-import db from '@firebaseConfig';
 import Select from '@mui/material/Select';
 import BoxShadow from '@layouts/BoxShadow';
 import { useEffect, useState } from 'react';
+import firebaseConfig from '@firebaseConfig';
 import useBarrioStore from '@stores/useBarrioStore';
-import { yupResolver } from '@hookform/resolvers/yup';
+// import { yupResolver } from '@hookform/resolvers/yup';
 import { FieldErrors, useForm } from 'react-hook-form';
 import useArticuloStore from '@stores/useArticuloStore';
 import { Barrio } from '@features/barrios/models/Barrio';
@@ -12,15 +11,19 @@ import { useNavigate, useParams } from "react-router-dom";
 import { doc, Firestore, getDoc } from 'firebase/firestore';
 import CustomTextField from '@components/form/CustomTextField';
 import { Articulo } from '@features/articulos/models/Articulo';
-import ArticuloFormSchema from '@features/articulos/ArticuloFormSchema';
+// import ArticuloFormSchema from '@features/articulos/ArticuloFormSchema';
 import CustomCurrencyInput from '@app/components/form/CustomCurrencyInput';
 import { Autocomplete, Button, FormControl, InputLabel, MenuItem, TextField } from '@mui/material';
 import { EstadoArticulo, EstadoPublicacion, estadoArticuloOptions, estadoPublicacionOptions } from '@mocks/DropdownOptions';
+
+const { db, storage } = firebaseConfig;
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 const defaultValues: Articulo = {
     id: '',
     nombre: '',
     precio: '',
+    imagenURLs: [],
     barrioRef: null,
     descripcion: null,
     estadoArticulo: EstadoArticulo.Nuevo,
@@ -41,6 +44,7 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
     const { barrios, fetchBarrios } = useBarrioStore();
+    const [imagenPreviews, setImagenPreviews] = useState([]);
     const [barrio, setBarrio] = useState<Barrio | null>(null);
     const { createArticulo, updateArticulo, getArticulo, loading, error } = useArticuloStore();
 
@@ -97,6 +101,45 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
         }
     };
 
+    const handleFileChange = (e) => {
+        const files = e.target.files;
+        const previews = [];
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                previews.push(e.target.result);
+                if (previews.length === files.length) {
+                    setImagenPreviews(previews);
+                }
+            };
+
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleFileUpload = async (files: FileList) => {
+        Array.from(files).forEach(async (file) => {
+            const storageRef = ref(storage, `${file.name}`);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            try {
+                const snapshot = await uploadTask;
+                const downloadURL = await getDownloadURL(snapshot.ref);
+                setValue('imagenURLs', [...getValues('imagenURLs'), downloadURL]);
+            } catch (error) {
+                console.error("Error al cargar la imagen:", error);
+            }
+        });
+    };
+
+    const handleFileChangeAndUpload = (e) => {
+        handleFileChange(e);
+        handleFileUpload(e.target.files);
+    };
+
     const onSubmit = async (articulo: Articulo) => {
         const barrioRef = getValues('barrioRef');
         const updatedArticulo = { ...articulo, barrioRef };
@@ -146,7 +189,7 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
                                 helperText={errors.precio?.message}
                             />
                         </div>
-                        
+
                         <div className="col-md-12 mb-3">
                             <FormControl fullWidth>
                                 <InputLabel>Estado publicacion</InputLabel>
@@ -190,6 +233,17 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
                                 isOptionEqualToValue={(option, value) => option.id === value.id}
                                 renderInput={(params) => <TextField {...params} label="Barrio" />}
                             />
+                        </div>
+                    </div>
+
+                    <div className="col-md-6">
+                        <div className="col-md-12 mb-3">
+                            <input type="file" multiple onChange={handleFileChangeAndUpload} />
+                            <div>
+                                {imagenPreviews.map((preview, index) => (
+                                    <img key={index} src={preview} alt={`Imagen ${index}`} style={{ maxWidth: '100px', maxHeight: '100px', marginRight: '10px' }} />
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -77,12 +77,12 @@ export default function ArticulosAdminPage() {
     )
   };
 
-  const handleDelete = async (params: any) => {
-    // const text = `Vas a eliminar un articulo a ${params.row.barrioNombre}`;
-    // const { isConfirmed } = await dialogConfirm(text);
-    // if (isConfirmed) {
-    //   deleteArticulo(params.row.id);
-    // }
+  const handleDelete = async ({ row }) => {
+    const text = `Vas a eliminar el articulo ${row.nombre}`;
+    const { isConfirmed } = await dialogConfirm(text);
+    if (isConfirmed) {
+      deleteArticulo(row.id);
+    }
   };
 
   const columns: GridColDef<any>[] = [

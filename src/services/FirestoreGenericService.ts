@@ -1,7 +1,9 @@
-import db from '@firebaseConfig';
 import { v4 as createUuid } from 'uuid';
+import firebaseConfig from '@firebaseConfig';
 import useNotification from '@services/useNotificationService';
 import { doc, getDocs, getDoc, setDoc, collection, runTransaction, deleteDoc } from "firebase/firestore";
+
+const { db } = firebaseConfig;
 
 export default function FirestoreGenericService<T>(COLLECTION: string) {
     const { toastError, toastSuccess } = useNotification();
