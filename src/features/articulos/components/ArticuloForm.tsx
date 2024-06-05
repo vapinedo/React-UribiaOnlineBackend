@@ -1,10 +1,9 @@
-// import dayjs from 'dayjs';
-import db from '@firebaseConfig';
 import Select from '@mui/material/Select';
 import BoxShadow from '@layouts/BoxShadow';
 import { useEffect, useState } from 'react';
+import firebaseConfig from '@firebaseConfig';
 import useBarrioStore from '@stores/useBarrioStore';
-import { yupResolver } from '@hookform/resolvers/yup';
+// import { yupResolver } from '@hookform/resolvers/yup';
 import { FieldErrors, useForm } from 'react-hook-form';
 import useArticuloStore from '@stores/useArticuloStore';
 import { Barrio } from '@features/barrios/models/Barrio';
@@ -12,15 +11,19 @@ import { useNavigate, useParams } from "react-router-dom";
 import { doc, Firestore, getDoc } from 'firebase/firestore';
 import CustomTextField from '@components/form/CustomTextField';
 import { Articulo } from '@features/articulos/models/Articulo';
-import ArticuloFormSchema from '@features/articulos/ArticuloFormSchema';
+// import ArticuloFormSchema from '@features/articulos/ArticuloFormSchema';
 import CustomCurrencyInput from '@app/components/form/CustomCurrencyInput';
 import { Autocomplete, Button, FormControl, InputLabel, MenuItem, TextField } from '@mui/material';
 import { EstadoArticulo, EstadoPublicacion, estadoArticuloOptions, estadoPublicacionOptions } from '@mocks/DropdownOptions';
+
+const { db, storage } = firebaseConfig;
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 const defaultValues: Articulo = {
     id: '',
     nombre: '',
     precio: '',
+    imagenURLs: [],
     barrioRef: null,
     descripcion: null,
     estadoArticulo: EstadoArticulo.Nuevo,
@@ -97,6 +100,32 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
         }
     };
 
+    const handleFileUpload = async (files: FileList) => {
+        const file = files[0];
+        const storageRef = ref(storage, `articulo_images/${file.name}`);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        uploadTask.on(
+            "state_changed",
+            (snapshot) => {
+                // Manejar el progreso de la carga si es necesario
+            },
+            (error) => {
+                console.error("Error al cargar la imagen:", error);
+            },
+            async () => {
+                // La carga se completó exitosamente
+                try {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    // Actualizar el estado del formulario o del artículo con la URL
+                    setValue('imagenURLs', [...getValues('imagenURLs'), downloadURL]);
+                } catch (error) {
+                    console.error("Error al obtener la URL de descarga:", error);
+                }
+            }
+        );
+    };
+
     const onSubmit = async (articulo: Articulo) => {
         const barrioRef = getValues('barrioRef');
         const updatedArticulo = { ...articulo, barrioRef };
@@ -146,7 +175,7 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
                                 helperText={errors.precio?.message}
                             />
                         </div>
-                        
+
                         <div className="col-md-12 mb-3">
                             <FormControl fullWidth>
                                 <InputLabel>Estado publicacion</InputLabel>
@@ -190,6 +219,12 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
                                 isOptionEqualToValue={(option, value) => option.id === value.id}
                                 renderInput={(params) => <TextField {...params} label="Barrio" />}
                             />
+                        </div>
+                    </div>
+
+                    <div className="col-md-6">
+                        <div className="col-md-12 mb-3">
+                            <input type="file" multiple onChange={(e) => handleFileUpload(e.target.files)} />
                         </div>
                     </div>
                 </div>
