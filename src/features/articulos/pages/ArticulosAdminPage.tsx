@@ -2,7 +2,7 @@ import { Box } from "@mui/material";
 import BoxShadow from "@layouts/BoxShadow";
 import { useEffect, useState } from "react";
 import { getDoc } from "firebase/firestore";
-import useDatetime from "@hooks/useDatetime";
+// import useDatetime from "@hooks/useDatetime";
 import { NavLink, useNavigate } from "react-router-dom";
 import useArticulosStore from "@stores/useArticuloStore";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
@@ -50,11 +50,11 @@ export default function ArticulosAdminPage() {
   const handleDetails = ({ row }: any) => {
     return (
       <NavLink
-        title={`Ver detalles de ${row.barrioNombre}`}
+        title={`Ver detalles de ${row.nombre}`}
         className="grid-table-linkable-column"
         to={`/articulos/detalles/${row.id}`}
       >
-        {row.barrioNombre}
+        {row.nombre}
       </NavLink>
     );
   };
@@ -87,34 +87,39 @@ export default function ArticulosAdminPage() {
 
   const columns: GridColDef<any>[] = [
     {
-      field: 'barrioNombre',
-      headerName: 'Cliente',
+      field: 'nombre',
+      headerName: 'Nombre',
       width: 170,
       editable: true,
       renderCell: handleDetails,
     },
     {
-      field: 'empleadoNombre',
-      headerName: 'Empleado',
-      width: 170,
-      editable: true,
-      renderCell: (params) => params.value,
-    },
-    {
       field: 'precio',
       headerName: 'Precio',
-      width: 110,
+      width: 170,
       editable: true,
     },
     {
       field: 'estadoArticulo',
-      headerName: 'Estado Articulo',
-      width: 130,
+      headerName: 'Estado articulo',
+      width: 230,
+      editable: true,
+    },
+    {
+      field: 'estadoPublicacion',
+      headerName: 'Estado publicación',
+      width: 230,
       editable: true,
       renderCell: ({ row }) => {
-        const className = getClassByState(row.estadoArticulo);
-        return <span className={className}>{row.estadoArticulo}</span>;
+        const className = getClassByState(row.estadoPublicacion);
+        return <span className={className}>{row.estadoPublicacion}</span>;
       }
+    },
+    {
+      field: 'barrioNombre',
+      headerName: 'Barrio',
+      width: 170,
+      editable: true,
     },
     {
       field: " ",

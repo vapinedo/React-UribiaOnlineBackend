@@ -47,7 +47,7 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
     const form = useForm<Articulo>({
         defaultValues: defaultValues,
         mode: "onTouched",
-        resolver: yupResolver(ArticuloFormSchema),
+        // resolver: yupResolver(ArticuloFormSchema),
     });
 
     const { control, register, formState, handleSubmit, setValue, getValues, watch, reset } = form;
