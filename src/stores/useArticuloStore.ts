@@ -16,7 +16,7 @@ interface ArticuloStore {
     getArticulo: (id: string) => Articulo | undefined;
     createArticulo: (articulo: Articulo) => Promise<void>;
     updateArticulo: (articulo: Articulo) => Promise<void>;
-    delete: (id: string) => Promise<void>;
+    deleteArticulo: (id: string) => Promise<void>;
     getTotalRecords: () => Promise<void>;
 }
 
@@ -119,7 +119,7 @@ const useArticuloStore = create<ArticuloStore>()(
                 }
             },
 
-            delete: async (id: string) => {
+            deleteArticulo: async (id: string) => {
                 set({ loading: true, error: null });
                 try {
                     await articuloService.deleteArticulo(id);
