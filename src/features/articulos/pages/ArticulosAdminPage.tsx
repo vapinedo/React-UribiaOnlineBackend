@@ -2,73 +2,59 @@ import { Box } from "@mui/material";
 import BoxShadow from "@layouts/BoxShadow";
 import { useEffect, useState } from "react";
 import { getDoc } from "firebase/firestore";
-import useDatetime from "@hooks/useDatetime";
-import useArticulosStore from "@stores/useArticulosStore";
+// import useDatetime from "@hooks/useDatetime";
 import { NavLink, useNavigate } from "react-router-dom";
+import useArticulosStore from "@stores/useArticuloStore";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 import useNotification from '@services/useNotificationService';
-import { Articulos } from "@features/articulos/models/Articulos";
+import { Articulo } from "@features/articulos/models/Articulo";
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 import useArticuloHelper from "@features/articulos/helpers/useArticuloHelper";
 
 export default function ArticulosAdminPage() {
   const navigate = useNavigate();
-  const { differenceInDays } = useDatetime();
   const { dialogConfirm } = useNotification();
   const { getClassByState } = useArticuloHelper();
-  const { prestamos, loading, error, fetchPrestamos, deletePrestamo } = useArticulosStore();
-
-  const [prestamosData, setPrestamosData] = useState<Articulos[]>([]);
+  const [articulosData, setArticulosData] = useState<Articulo[]>([]);
+  const { articulos, loading, error, fetchArticulos, deleteArticulo } = useArticulosStore();
 
   useEffect(() => {
     const fetchRelatedData = async () => {
-      const prestamosConNombres: Articulos[] = await Promise.all(
-        prestamos.map(async (prestamo) => {
-          let clienteNombre = '';
-          let empleadoNombre = '';
+      const articulosConNombre: Articulo[] = await Promise.all(
+        articulos.map(async (articulo) => {
+          let barrioNombre = '';
 
-          if (prestamo.clienteRef) {
-            const clienteSnapshot = await getDoc(prestamo.clienteRef);
-            if (clienteSnapshot.exists()) {
-              const clienteData = clienteSnapshot.data();
-              if (clienteData) {
-                clienteNombre = `${clienteData.nombres || ''} ${clienteData.apellidos || ''}`;
-              }
-            }
-          }
-
-          if (prestamo.empleadoRef) {
-            const empleadoSnapshot = await getDoc(prestamo.empleadoRef);
-            if (empleadoSnapshot.exists()) {
-              const empleadoData = empleadoSnapshot.data();
-              if (empleadoData) {
-                empleadoNombre = `${empleadoData.nombres || ''} ${empleadoData.apellidos || ''}`;
+          if (articulo.barrioRef) {
+            const barrioSnapshot = await getDoc(articulo.barrioRef);
+            if (barrioSnapshot.exists()) {
+              const barrioData = barrioSnapshot.data();
+              if (barrioData) {
+                barrioNombre = `${barrioData.nombre || ''}`;
               }
             }
           }
 
           return {
-            ...prestamo,
-            clienteNombre,
-            empleadoNombre,
+            ...articulo,
+            barrioNombre,
           };
         })
       );
 
-      setPrestamosData(prestamosConNombres);
+      setArticulosData(articulosConNombre);
     };
 
     fetchRelatedData();
-  }, [prestamos]);
+  }, [articulos]);
 
   const handleDetails = ({ row }: any) => {
     return (
       <NavLink
-        title={`Ver detalles de ${row.clienteNombre}`}
+        title={`Ver detalles de ${row.nombre}`}
         className="grid-table-linkable-column"
-        to={`/prestamos/detalles/${row.id}`}
+        to={`/articulos/detalles/${row.id}`}
       >
-        {row.clienteNombre}
+        {row.nombre}
       </NavLink>
     );
   };
@@ -79,7 +65,7 @@ export default function ArticulosAdminPage() {
         <IconEdit
           color="#00abfb"
           cursor="pointer"
-          onClick={() => navigate(`/prestamos/editar/${params.id}`)}
+          onClick={() => navigate(`/articulos/editar/${params.id}`)}
         />
         <IconTrash
           color="#ff2825"
@@ -92,68 +78,48 @@ export default function ArticulosAdminPage() {
   };
 
   const handleDelete = async (params: any) => {
-    const text = `Vas a eliminar un prestamo a ${params.row.clienteNombre}`;
-    const { isConfirmed } = await dialogConfirm(text);
-    if (isConfirmed) {
-      deletePrestamo(params.row.id);
-    }
+    // const text = `Vas a eliminar un articulo a ${params.row.barrioNombre}`;
+    // const { isConfirmed } = await dialogConfirm(text);
+    // if (isConfirmed) {
+    //   deleteArticulo(params.row.id);
+    // }
   };
 
   const columns: GridColDef<any>[] = [
     {
-      field: 'clienteNombre',
-      headerName: 'Cliente',
-      width: 170,
+      field: 'nombre',
+      headerName: 'Nombre',
+      width: 300,
       editable: true,
       renderCell: handleDetails,
     },
     {
-      field: 'empleadoNombre',
-      headerName: 'Empleado',
+      field: 'precio',
+      headerName: 'Precio',
       width: 170,
       editable: true,
-      renderCell: (params) => params.value,
     },
     {
-      field: 'monto_prestado',
-      headerName: 'Prestado',
-      width: 110,
+      field: 'estadoArticulo',
+      headerName: 'Estado articulo',
+      width: 180,
       editable: true,
     },
     {
-      field: 'monto_abonado',
-      headerName: 'Abonado',
-      width: 110,
-      editable: true,
-    },
-    {
-      field: 'monto_adeudado',
-      headerName: 'Adeudado',
-      width: 110,
-      editable: true,
-    },
-    {
-      field: 'estado',
-      headerName: 'Estado',
-      width: 130,
+      field: 'estadoPublicacion',
+      headerName: 'Estado publicación',
+      width: 180,
       editable: true,
       renderCell: ({ row }) => {
-        const className = getClassByState(row.estado);
-        return <span className={className}>{row.estado}</span>;
+        const className = getClassByState(row.estadoPublicacion);
+        return <span className={className}>{row.estadoPublicacion}</span>;
       }
     },
     {
-      field: 'modalidadDePago',
-      headerName: 'Modo de Pago',
-      width: 120,
+      field: 'barrioNombre',
+      headerName: 'Barrio',
+      width: 170,
       editable: true,
-    },
-    {
-      field: 'fechaFinal',
-      headerName: 'Días restantes',
-      width: 120,
-      editable: true,
-      renderCell: ({ row }) => differenceInDays(row.fechaInicio, row.fechaFinal)
     },
     {
       field: " ",
@@ -162,8 +128,8 @@ export default function ArticulosAdminPage() {
   ];
 
   useEffect(() => {
-    fetchPrestamos();
-  }, [fetchPrestamos]);
+    fetchArticulos();
+  }, [fetchArticulos]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -171,9 +137,9 @@ export default function ArticulosAdminPage() {
   return (
     <BoxShadow>
       <header className="d-flex justify-content-between align-items-center">
-        <h2>Lista de Prestamos</h2>
-        <button onClick={() => navigate('/prestamos/nuevo')} className="btn btn-primary">
-          Crear prestamo
+        <h2>Lista de Articulos</h2>
+        <button onClick={() => navigate('/articulos/nuevo')} className="btn btn-primary">
+          Crear articulo
         </button>
       </header>
 
@@ -183,7 +149,7 @@ export default function ArticulosAdminPage() {
           density="compact"
           checkboxSelection
           disableColumnFilter
-          rows={prestamosData}
+          rows={articulosData}
           disableColumnSelector
           pageSizeOptions={[12]}
           disableDensitySelector

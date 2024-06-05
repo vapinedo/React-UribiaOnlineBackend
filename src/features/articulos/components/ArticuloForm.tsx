@@ -10,12 +10,12 @@ import useArticuloStore from '@stores/useArticuloStore';
 import { Barrio } from '@features/barrios/models/Barrio';
 import { useNavigate, useParams } from "react-router-dom";
 import { doc, Firestore, getDoc } from 'firebase/firestore';
-// import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import CustomTextField from '@components/form/CustomTextField';
 import { Articulo } from '@features/articulos/models/Articulo';
-import { estadoPrestamoOptions } from '@mocks/DropdownOptions';
 import ArticuloFormSchema from '@features/articulos/ArticuloFormSchema';
 import CustomCurrencyInput from '@app/components/form/CustomCurrencyInput';
 import { Autocomplete, Button, FormControl, InputLabel, MenuItem, TextField } from '@mui/material';
+import { EstadoArticulo, EstadoPublicacion, estadoArticuloOptions, estadoPublicacionOptions } from '@mocks/DropdownOptions';
 
 const defaultValues: Articulo = {
     id: '',
@@ -23,8 +23,8 @@ const defaultValues: Articulo = {
     precio: '',
     barrioRef: null,
     descripcion: null,
-    estadoArticulo: 'Nuevo',
-    estadoPublicacion: 'No Publicado',
+    estadoArticulo: EstadoArticulo.Nuevo,
+    estadoPublicacion: EstadoPublicacion.NoPublicado,
     audit: {
         updated_by: null,
         created_by: null,
@@ -47,7 +47,7 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
     const form = useForm<Articulo>({
         defaultValues: defaultValues,
         mode: "onTouched",
-        resolver: yupResolver(ArticuloFormSchema),
+        // resolver: yupResolver(ArticuloFormSchema),
     });
 
     const { control, register, formState, handleSubmit, setValue, getValues, watch, reset } = form;
@@ -63,7 +63,7 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
                             ...articulo,
                             // fechaInicio: dayjs(articulo.fechaInicio).valueOf(),
                         });
-                        
+
                         if (articulo.barrioRef) {
                             const barrioDoc = await getDoc(articulo.barrioRef);
                             if (barrioDoc.exists()) {
@@ -127,6 +127,59 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
                 <div className="row">
                     <div className="col-md-6">
                         <div className="col-md-12 mb-3">
+                            <CustomTextField
+                                autoFocus
+                                type="text"
+                                name="nombre"
+                                label="Nombre"
+                                register={register("nombre")}
+                                error={errors.nombre?.message}
+                            />
+                        </div>
+
+                        <div className="col-md-12 mb-3">
+                            <CustomCurrencyInput
+                                size='small'
+                                control={control}
+                                name="precio"
+                                label="Precio"
+                                helperText={errors.precio?.message}
+                            />
+                        </div>
+                        
+                        <div className="col-md-12 mb-3">
+                            <FormControl fullWidth>
+                                <InputLabel>Estado publicacion</InputLabel>
+                                <Select
+                                    size='small'
+                                    label="Estado publicacion"
+                                    value={watch('estadoPublicacion')}
+                                    onChange={(event) => setValue('estadoPublicacion', event.target.value)}
+                                >
+                                    {estadoPublicacionOptions.map((estado: string) => (
+                                        <MenuItem key={estado} value={estado}>{estado}</MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </div>
+
+                        <div className="col-md-12 mb-3">
+                            <FormControl fullWidth>
+                                <InputLabel>Estado articulo</InputLabel>
+                                <Select
+                                    size='small'
+                                    label="Estado articulo"
+                                    value={watch('estadoArticulo')}
+                                    onChange={(event) => setValue('estadoArticulo', event.target.value)}
+                                >
+                                    {estadoArticuloOptions.map((estado: string) => (
+                                        <MenuItem key={estado} value={estado}>{estado}</MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </div>
+
+                        <div className="col-md-12 mb-3">
                             <Autocomplete
                                 fullWidth
                                 size='small'
@@ -138,54 +191,13 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
                                 renderInput={(params) => <TextField {...params} label="Barrio" />}
                             />
                         </div>
-
-                        <div className="col-md-12 mb-3">
-                            <CustomCurrencyInput
-                                size='small'
-                                control={control}
-                                name="precio"
-                                label="Precio"
-                                helperText={errors.precio?.message}
-                            />                        
-                        </div>                       
-{/* 
-                        <div className="col-md-12 mb-3">
-                            <FormControl fullWidth>
-                                <InputLabel>Estado articulo</InputLabel>
-                                <Select
-                                    size='small'
-                                    label="Estado"
-                                    value={watch('estadoAticulo')}
-                                    onChange={(event) => setValue('estadoArticulo', event.target.value)}
-                                >
-                                    {estadoPrestamoOptions.map((estado: string) => (
-                                        <MenuItem key={estado} value={estado}>{estado}</MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        </div> */}
-
-                        <div className="col-md-12 mb-3">
-                            {/* <DatePicker
-                                name="fechaInicio"
-                                sx={{ width: "100%" }}
-                                label="Fecha de inicio"
-                                defaultValue={dayjs(new Date())}
-                                value={dayjs(form.getValues("fechaInicio"))}
-                                slotProps={{ textField: { size: 'small' } }}
-                                onChange={(newDate) => {
-                                    const timeStamp = dayjs(newDate).valueOf();
-                                    setValue('fechaInicio', timeStamp);
-                                }}
-                            /> */}
-                        </div>
                     </div>
                 </div>
-                
-                <Button 
-                    type="submit" 
-                    variant="contained" 
-                    sx={{ marginTop: 2 }} 
+
+                <Button
+                    type="submit"
+                    variant="contained"
+                    sx={{ marginTop: 2 }}
                     disabled={isSubmitting || !isValid}
                     color={isEditMode ? 'success' : 'primary'}>
                     {isEditMode ? 'Actualizar' : 'Guardar'}

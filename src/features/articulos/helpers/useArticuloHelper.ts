@@ -1,14 +1,14 @@
-import { EstadoArticulo } from "@mocks/DropdownOptions";
+import { EstadoPublicacion } from "@mocks/DropdownOptions";
 
 export default function useArticuloHelper() {
-    const getClassByState = (state: EstadoArticulo): string => {
+    const getClassByState = (state: EstadoPublicacion): string => {
         let className = '';
         switch (state) {
-            case EstadoArticulo.Publicado:
+            case EstadoPublicacion.Publicado:
                 className = 'badge text-bg-primary';
                 break;
-            case EstadoArticulo.NoPublicado:
-                className = 'badge text-bg-success';
+            case EstadoPublicacion.NoPublicado:
+                className = 'badge text-bg-danger';
                 break;
             default:
                 className = 'badge text-bg-default';
