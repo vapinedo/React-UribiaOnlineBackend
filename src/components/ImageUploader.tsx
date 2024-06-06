@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
-const ImageUploader = ({ onImagesSelected }) => {
-    const [imagePreviews, setImagePreviews] = useState([]);
+interface ImageUploaderProps {
+    onImagesSelected: (files: File[]) => void;
+}
 
-    const onDrop = (acceptedFiles) => {
+const ImageUploader = ({ onImagesSelected }: ImageUploaderProps) => {
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+
+    const onDrop = (acceptedFiles: File[]) => {
         const urls = acceptedFiles.map(file => URL.createObjectURL(file));
         setImagePreviews(prevPreviews => [...prevPreviews, ...urls]);
         onImagesSelected(acceptedFiles);
