@@ -3,7 +3,6 @@ import BoxShadow from '@layouts/BoxShadow';
 import { useEffect, useState } from 'react';
 import firebaseConfig from '@firebaseConfig';
 import useBarrioStore from '@stores/useBarrioStore';
-// import { yupResolver } from '@hookform/resolvers/yup';
 import { FieldErrors, useForm } from 'react-hook-form';
 import useArticuloStore from '@stores/useArticuloStore';
 import { Barrio } from '@features/barrios/models/Barrio';
@@ -11,13 +10,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { doc, Firestore, getDoc } from 'firebase/firestore';
 import CustomTextField from '@components/form/CustomTextField';
 import { Articulo } from '@features/articulos/models/Articulo';
-// import ArticuloFormSchema from '@features/articulos/ArticuloFormSchema';
 import CustomCurrencyInput from '@app/components/form/CustomCurrencyInput';
 import { Autocomplete, Button, FormControl, InputLabel, MenuItem, TextField } from '@mui/material';
 import { EstadoArticulo, EstadoPublicacion, estadoArticuloOptions, estadoPublicacionOptions } from '@mocks/DropdownOptions';
 
-const { db, storage } = firebaseConfig;
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+const { db } = firebaseConfig;
 
 const defaultValues: Articulo = {
     id: '',
@@ -44,14 +41,14 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
     const { barrios, fetchBarrios } = useBarrioStore();
-    const [imagenPreviews, setImagenPreviews] = useState([]);
     const [barrio, setBarrio] = useState<Barrio | null>(null);
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+    const [imageFiles, setImageFiles] = useState<FileList | null>(null);
     const { createArticulo, updateArticulo, getArticulo, loading, error } = useArticuloStore();
 
     const form = useForm<Articulo>({
         defaultValues: defaultValues,
         mode: "onTouched",
-        // resolver: yupResolver(ArticuloFormSchema),
     });
 
     const { control, register, formState, handleSubmit, setValue, getValues, watch, reset } = form;
@@ -65,7 +62,6 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
                     if (articulo) {
                         reset({
                             ...articulo,
-                            // fechaInicio: dayjs(articulo.fechaInicio).valueOf(),
                         });
 
                         if (articulo.barrioRef) {
@@ -101,43 +97,15 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
         }
     };
 
-    const handleFileChange = (e) => {
-        const files = e.target.files;
-        const previews = [];
+    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files) {
+            const filesArray = Array.from(event.target.files);
 
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const reader = new FileReader();
+            const urls = filesArray.map(file => URL.createObjectURL(file));
 
-            reader.onload = (e) => {
-                previews.push(e.target.result);
-                if (previews.length === files.length) {
-                    setImagenPreviews(previews);
-                }
-            };
-
-            reader.readAsDataURL(file);
+            setImagePreviews(urls);
+            setImageFiles(event.target.files);
         }
-    };
-
-    const handleFileUpload = async (files: FileList) => {
-        Array.from(files).forEach(async (file) => {
-            const storageRef = ref(storage, `${file.name}`);
-            const uploadTask = uploadBytesResumable(storageRef, file);
-
-            try {
-                const snapshot = await uploadTask;
-                const downloadURL = await getDownloadURL(snapshot.ref);
-                setValue('imagenURLs', [...getValues('imagenURLs'), downloadURL]);
-            } catch (error) {
-                console.error("Error al cargar la imagen:", error);
-            }
-        });
-    };
-
-    const handleFileChangeAndUpload = (e) => {
-        handleFileChange(e);
-        handleFileUpload(e.target.files);
     };
 
     const onSubmit = async (articulo: Articulo) => {
@@ -145,9 +113,9 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
         const updatedArticulo = { ...articulo, barrioRef };
 
         if (isEditMode) {
-            await updateArticulo(updatedArticulo);
+            await updateArticulo(updatedArticulo, imageFiles);
         } else {
-            await createArticulo(updatedArticulo);
+            await createArticulo(updatedArticulo, imageFiles);
         }
 
         navigate("/articulos");
@@ -238,12 +206,32 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
 
                     <div className="col-md-6">
                         <div className="col-md-12 mb-3">
-                            <input type="file" multiple onChange={handleFileChangeAndUpload} />
-                            <div>
-                                {imagenPreviews.map((preview, index) => (
-                                    <img key={index} src={preview} alt={`Imagen ${index}`} style={{ maxWidth: '100px', maxHeight: '100px', marginRight: '10px' }} />
-                                ))}
+                            <input
+                                multiple
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                            />
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                {imagePreviews.length > 0 && (
+                                    <img
+                                        src={imagePreviews[0]}
+                                        alt="Imagen Principal"
+                                        style={{ width: '300px', height: '300px', marginBottom: '10px' }}
+                                    />
+                                )}
+                                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
+                                    {imagePreviews.slice(1).map((preview, index) => (
+                                        <img
+                                            key={index}
+                                            src={preview}
+                                            alt={`Imagen ${index + 1}`}
+                                            style={{ width: '100px', height: '100px', margin: '5px' }}
+                                        />
+                                    ))}
+                                </div>
                             </div>
+
                         </div>
                     </div>
                 </div>

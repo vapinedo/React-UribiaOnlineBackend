@@ -14,14 +14,15 @@ interface ArticuloStore {
     error: string | null;
     fetchArticulos: () => Promise<void>;
     getArticulo: (id: string) => Articulo | undefined;
-    createArticulo: (articulo: Articulo) => Promise<void>;
-    updateArticulo: (articulo: Articulo) => Promise<void>;
+    createArticulo: (articulo: Articulo, imageFiles: FileList | null) => Promise<void>;
+    updateArticulo: (articulo: Articulo, imageFiles: FileList | null) => Promise<void>;
     deleteArticulo: (id: string) => Promise<void>;
     getTotalRecords: () => Promise<void>;
 }
 
 const firestore = getFirestore(firebaseApp);
 
+// Funciones para serializar y deserializar los datos de Firebase
 const serialize = (articulo: Articulo): any => {
     return {
         ...articulo,
@@ -91,10 +92,10 @@ const useArticuloStore = create<ArticuloStore>()(
                 return articulos.find(articulo => articulo.id === id);
             },
 
-            createArticulo: async (articulo: Articulo) => {
+            createArticulo: async (articulo: Articulo, imageFiles: FileList | null) => {
                 set({ loading: true, error: null });
                 try {
-                    await articuloService.createArticulo(articulo);
+                    await articuloService.createArticulo(articulo, imageFiles);
                     await get().fetchArticulos();
                 } catch (error: unknown) {
                     if (error instanceof Error) {
@@ -105,10 +106,10 @@ const useArticuloStore = create<ArticuloStore>()(
                 }
             },
 
-            updateArticulo: async (articulo: Articulo) => {
+            updateArticulo: async (articulo: Articulo, imageFiles: FileList | null) => {
                 set({ loading: true, error: null });
                 try {
-                    await articuloService.updateArticulo(articulo);
+                    await articuloService.updateArticulo(articulo, imageFiles);
                     await get().fetchArticulos();
                 } catch (error: unknown) {
                     if (error instanceof Error) {
@@ -142,8 +143,7 @@ const useArticuloStore = create<ArticuloStore>()(
                     set({ loading: false, error: 'Error al obtener el total de articulos' });
                     console.error(error);
                 }
-            }
-
+            },
         }),
         {
             name: "articulos-store",

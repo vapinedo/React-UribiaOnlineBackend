@@ -1,9 +1,10 @@
 import { v4 as createUuid } from 'uuid';
 import firebaseConfig from '@firebaseConfig';
 import useNotification from '@services/useNotificationService';
+import { ref, uploadBytesResumable, getDownloadURL, listAll, deleteObject } from "firebase/storage";
 import { doc, getDocs, getDoc, setDoc, collection, runTransaction, deleteDoc } from "firebase/firestore";
 
-const { db } = firebaseConfig;
+const { db, storage } = firebaseConfig;
 
 export default function FirestoreGenericService<T>(COLLECTION: string) {
     const { toastError, toastSuccess } = useNotification();
@@ -36,11 +37,21 @@ export default function FirestoreGenericService<T>(COLLECTION: string) {
         return document;
     };
 
-    const createDocument = async (document: T & { id?: string }) => {
+    const createDocument = async (document: T & { id?: string }, imageFiles: FileList | null) => {
         try {
             if (!document.id) {
                 document.id = createUuid();
             }
+            
+            let imageUrls: string[] = [];
+            if (imageFiles) {
+                imageUrls = await uploadImagesForDocument(document.id, imageFiles);
+                if (!('imagenURLs' in document)) {
+                    (document as any).imagenURLs = [];  // Asignar un arreglo vacío si no existe
+                }
+                (document as any).imagenURLs = imageUrls;  // Tipo de aserción con `any`
+            }
+    
             await setDoc(doc(db, COLLECTION, document.id), document);
             toastSuccess("Documento creado exitosamente!");
         } catch (error) {
@@ -48,7 +59,7 @@ export default function FirestoreGenericService<T>(COLLECTION: string) {
         }
     };
 
-    const updateDocument = async (document: T & { id: string }) => {
+    const updateDocument = async (document: T & { id: string }, imageFiles: FileList | null) => {
         const docRef = doc(db, COLLECTION, document.id);
         try {
             await runTransaction(db, async (transaction) => {
@@ -56,6 +67,18 @@ export default function FirestoreGenericService<T>(COLLECTION: string) {
                 if (!sfDoc.exists()) {
                     throw new Error(`No existe el documento que quiere editar en ${COLLECTION}`);
                 }
+    
+                let imageUrls: string[] = [];
+                if (imageFiles) {
+                    await deleteImagesForDocument(document.id);
+                    imageUrls = await uploadImagesForDocument(document.id, imageFiles);
+                    
+                    if (!('imagenURLs' in document)) {
+                        (document as any).imagenURLs = [];  // Asignar un arreglo vacío si no existe
+                    }
+                    (document as any).imagenURLs = imageUrls;  // Tipo de aserción con `any`
+                }
+    
                 transaction.update(docRef, { ...document });
                 toastSuccess("Documento actualizado exitosamente!");
             });
@@ -66,11 +89,44 @@ export default function FirestoreGenericService<T>(COLLECTION: string) {
 
     const deleteDocument = async (id: string) => {
         try {
+            await deleteImagesForDocument(id);
             const docRef = doc(db, COLLECTION, id);
             await deleteDoc(docRef);
             toastSuccess("Documento eliminado exitosamente!");
         } catch (error) {
             toastError(error, `Error al eliminar documento en ${COLLECTION}`);
+        }
+    };
+
+    const uploadImagesForDocument = async (documentId: string, imageFiles: FileList): Promise<string[]> => {
+        const imageUrls: string[] = [];
+    
+        const uploadPromises = Array.from(imageFiles).map(async (file) => {
+            const storageRef = ref(storage, `${COLLECTION}/${documentId}/${file.name}`);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+    
+            try {
+                await uploadTask;
+                const downloadURL = await getDownloadURL(storageRef);
+                imageUrls.push(downloadURL);
+            } catch (error) {
+                console.error("Error al cargar la imagen:", error);
+            }
+        });
+    
+        await Promise.all(uploadPromises);
+        return imageUrls;
+    };
+
+    const deleteImagesForDocument = async (documentId: string) => {
+        try {
+            const imagesRef = ref(storage, `${COLLECTION}/${documentId}`);
+            const imageList = await listAll(imagesRef);
+            imageList.items.forEach(async (imageRef) => {
+                await deleteObject(imageRef);
+            });
+        } catch (error) {
+            console.error("Error al eliminar imágenes del documento:", error);
         }
     };
 
