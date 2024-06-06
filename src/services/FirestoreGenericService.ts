@@ -42,9 +42,16 @@ export default function FirestoreGenericService<T>(COLLECTION: string) {
             if (!document.id) {
                 document.id = createUuid();
             }
+            
+            let imageUrls: string[] = [];
             if (imageFiles) {
-                await uploadImagesForDocument(document.id, imageFiles);
+                imageUrls = await uploadImagesForDocument(document.id, imageFiles);
+                if (!('imagenURLs' in document)) {
+                    (document as any).imagenURLs = [];  // Asignar un arreglo vacío si no existe
+                }
+                (document as any).imagenURLs = imageUrls;  // Tipo de aserción con `any`
             }
+    
             await setDoc(doc(db, COLLECTION, document.id), document);
             toastSuccess("Documento creado exitosamente!");
         } catch (error) {
@@ -60,10 +67,18 @@ export default function FirestoreGenericService<T>(COLLECTION: string) {
                 if (!sfDoc.exists()) {
                     throw new Error(`No existe el documento que quiere editar en ${COLLECTION}`);
                 }
+    
+                let imageUrls: string[] = [];
                 if (imageFiles) {
                     await deleteImagesForDocument(document.id);
-                    await uploadImagesForDocument(document.id, imageFiles);
+                    imageUrls = await uploadImagesForDocument(document.id, imageFiles);
+                    
+                    if (!('imagenURLs' in document)) {
+                        (document as any).imagenURLs = [];  // Asignar un arreglo vacío si no existe
+                    }
+                    (document as any).imagenURLs = imageUrls;  // Tipo de aserción con `any`
                 }
+    
                 transaction.update(docRef, { ...document });
                 toastSuccess("Documento actualizado exitosamente!");
             });
@@ -83,34 +98,24 @@ export default function FirestoreGenericService<T>(COLLECTION: string) {
         }
     };
 
-    const uploadImagesForDocument = async (documentId: string, imageFiles: FileList) => {
-        Array.from(imageFiles).forEach(async (file) => {
+    const uploadImagesForDocument = async (documentId: string, imageFiles: FileList): Promise<string[]> => {
+        const imageUrls: string[] = [];
+    
+        const uploadPromises = Array.from(imageFiles).map(async (file) => {
             const storageRef = ref(storage, `${COLLECTION}/${documentId}/${file.name}`);
             const uploadTask = uploadBytesResumable(storageRef, file);
-
+    
             try {
-                const snapshot = await uploadTask;
-                const downloadURL = await getDownloadURL(snapshot.ref);
-
-                // Verificar si la propiedad imagenURLs existe en el documento
-                const documentRef = doc(db, COLLECTION, documentId);
-                const documentSnapshot = await getDoc(documentRef);
-                if (documentSnapshot.exists()) {
-                    const documentData = documentSnapshot.data() as { imagenURLs?: string[] };
-                    if (!documentData.imagenURLs) {
-                        throw new Error(`La propiedad 'imagenURLs' no está definida en el documento`);
-                    }
-
-                    // Aquí podrías guardar la URL de descarga en la propiedad imagenURLs
-                    documentData.imagenURLs.push(downloadURL);
-                    await setDoc(documentRef, { imagenURLs: documentData.imagenURLs }, { merge: true });
-                } else {
-                    throw new Error(`No se encontró el documento con ID ${documentId}`);
-                }
+                await uploadTask;
+                const downloadURL = await getDownloadURL(storageRef);
+                imageUrls.push(downloadURL);
             } catch (error) {
                 console.error("Error al cargar la imagen:", error);
             }
         });
+    
+        await Promise.all(uploadPromises);
+        return imageUrls;
     };
 
     const deleteImagesForDocument = async (documentId: string) => {
