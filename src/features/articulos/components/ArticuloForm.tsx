@@ -42,6 +42,7 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
     const { id } = useParams<{ id: string }>();
     const { barrios, fetchBarrios } = useBarrioStore();
     const [barrio, setBarrio] = useState<Barrio | null>(null);
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
     const [imageFiles, setImageFiles] = useState<FileList | null>(null);
     const { createArticulo, updateArticulo, getArticulo, loading, error, uploadImageForArticulo } = useArticuloStore();
 
@@ -87,6 +88,11 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
+            const filesArray = Array.from(event.target.files);
+
+            const urls = filesArray.map(file => URL.createObjectURL(file));
+
+            setImagePreviews(urls);
             setImageFiles(event.target.files);
         }
     };
@@ -210,6 +216,11 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
                                 accept="image/*"
                                 onChange={handleImageChange}
                             />
+                            <div>
+                                {imagePreviews.map((preview, index) => (
+                                    <img key={index} src={preview} alt={`Imagen ${index}`} style={{ width: '100px', height: '100px', marginRight: '10px' }} />
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
