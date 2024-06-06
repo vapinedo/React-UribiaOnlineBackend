@@ -3,6 +3,7 @@ import BoxShadow from '@layouts/BoxShadow';
 import { useEffect, useState } from 'react';
 import firebaseConfig from '@firebaseConfig';
 import useBarrioStore from '@stores/useBarrioStore';
+import ImageUploader from '@components/ImageUploader';
 import { FieldErrors, useForm } from 'react-hook-form';
 import useArticuloStore from '@stores/useArticuloStore';
 import { Barrio } from '@features/barrios/models/Barrio';
@@ -42,7 +43,6 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
     const { id } = useParams<{ id: string }>();
     const { barrios, fetchBarrios } = useBarrioStore();
     const [barrio, setBarrio] = useState<Barrio | null>(null);
-    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
     const [imageFiles, setImageFiles] = useState<FileList | null>(null);
     const { createArticulo, updateArticulo, getArticulo, loading, error } = useArticuloStore();
 
@@ -97,15 +97,9 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
         }
     };
 
-    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files) {
-            const filesArray = Array.from(event.target.files);
-
-            const urls = filesArray.map(file => URL.createObjectURL(file));
-
-            setImagePreviews(urls);
-            setImageFiles(event.target.files);
-        }
+    const handleImagesChange = (files: FileList) => {
+        console.log(files.length);
+        setImageFiles(files);
     };
 
     const onSubmit = async (articulo: Articulo) => {
@@ -206,32 +200,7 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
 
                     <div className="col-md-6">
                         <div className="col-md-12 mb-3">
-                            <input
-                                multiple
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageChange}
-                            />
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                {imagePreviews.length > 0 && (
-                                    <img
-                                        src={imagePreviews[0]}
-                                        alt="Imagen Principal"
-                                        style={{ width: '300px', height: '300px', marginBottom: '10px' }}
-                                    />
-                                )}
-                                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
-                                    {imagePreviews.slice(1).map((preview, index) => (
-                                        <img
-                                            key={index}
-                                            src={preview}
-                                            alt={`Imagen ${index + 1}`}
-                                            style={{ width: '100px', height: '100px', margin: '5px' }}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-
+                            <ImageUploader onImagesChange={handleImagesChange} />
                         </div>
                     </div>
                 </div>
