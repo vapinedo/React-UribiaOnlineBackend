@@ -18,10 +18,13 @@ interface ArticuloStore {
     updateArticulo: (articulo: Articulo) => Promise<void>;
     deleteArticulo: (id: string) => Promise<void>;
     getTotalRecords: () => Promise<void>;
+    uploadImageForArticulo: (articuloId: string, imageFiles: FileList) => Promise<void>;
+    deleteImagesForArticulo: (articuloId: string) => Promise<void>;
 }
 
 const firestore = getFirestore(firebaseApp);
 
+// Funciones para serializar y deserializar los datos de Firebase
 const serialize = (articulo: Articulo): any => {
     return {
         ...articulo,
@@ -142,8 +145,37 @@ const useArticuloStore = create<ArticuloStore>()(
                     set({ loading: false, error: 'Error al obtener el total de articulos' });
                     console.error(error);
                 }
-            }
+            },
 
+            uploadImageForArticulo: async (articuloId: string, imageFiles: FileList) => {
+                set({ loading: true, error: null });
+                try {
+                    Array.from(imageFiles).forEach(async (file) => {
+                        await articuloService.uploadImageForArticulo(articuloId, file);
+                    });
+                    await get().fetchArticulos();
+                } catch (error: unknown) {
+                    if (error instanceof Error) {
+                        set({ error: error.message, loading: false });
+                    } else {
+                        set({ error: String(error), loading: false });
+                    }
+                }
+            },
+
+            deleteImagesForArticulo: async (articuloId: string) => {
+                set({ loading: true, error: null });
+                try {
+                    await articuloService.deleteImagesForArticulo(articuloId);
+                    await get().fetchArticulos(); // Actualizar la lista de artículos después de eliminar las imágenes
+                } catch (error: unknown) {
+                    if (error instanceof Error) {
+                        set({ error: error.message, loading: false });
+                    } else {
+                        set({ error: String(error), loading: false });
+                    }
+                }
+            },
         }),
         {
             name: "articulos-store",
