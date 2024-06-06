@@ -212,11 +212,26 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
                                 accept="image/*"
                                 onChange={handleImageChange}
                             />
-                            <div>
-                                {imagePreviews.map((preview, index) => (
-                                    <img key={index} src={preview} alt={`Imagen ${index}`} style={{ width: '100px', height: '100px', marginRight: '10px' }} />
-                                ))}
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                {imagePreviews.length > 0 && (
+                                    <img
+                                        src={imagePreviews[0]}
+                                        alt="Imagen Principal"
+                                        style={{ width: '300px', height: '300px', marginBottom: '10px' }}
+                                    />
+                                )}
+                                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
+                                    {imagePreviews.slice(1).map((preview, index) => (
+                                        <img
+                                            key={index}
+                                            src={preview}
+                                            alt={`Imagen ${index + 1}`}
+                                            style={{ width: '100px', height: '100px', margin: '5px' }}
+                                        />
+                                    ))}
+                                </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -233,4 +248,3 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
         </BoxShadow>
     );
 }
-    
