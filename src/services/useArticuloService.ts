@@ -15,7 +15,7 @@ const getBarrioData = async (articulo: Articulo) => {
 };
 
 const uploadImageForArticulo = async (articuloId: string, imageFile: File) => {
-    const storageRef = ref(storage, `articulo_images/${articuloId}/${imageFile.name}`);
+    const storageRef = ref(storage, `articulos/${articuloId}/${imageFile.name}`);
     const uploadTask = uploadBytesResumable(storageRef, imageFile);
     try {
         const snapshot = await uploadTask;

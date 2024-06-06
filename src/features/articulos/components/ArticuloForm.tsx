@@ -42,6 +42,7 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
     const { id } = useParams<{ id: string }>();
     const { barrios, fetchBarrios } = useBarrioStore();
     const [barrio, setBarrio] = useState<Barrio | null>(null);
+    const [imageFiles, setImageFiles] = useState<FileList | null>(null);
     const { createArticulo, updateArticulo, getArticulo, loading, error, uploadImageForArticulo } = useArticuloStore();
 
     const form = useForm<Articulo>({
@@ -84,6 +85,12 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
         }
     }, [barrios, fetchBarrios]);
 
+    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files) {
+            setImageFiles(event.target.files);
+        }
+    };
+
     const handleBarrioChange = (_event: any, value: Barrio & { id: string } | null) => {
         if (value && value.id) {
             const barrioRef = doc(db as Firestore, 'BARRIOS', value.id);
@@ -103,6 +110,10 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
             await updateArticulo(updatedArticulo);
         } else {
             await createArticulo(updatedArticulo);
+        }
+
+        if (imageFiles) {
+            await uploadImageForArticulo(updatedArticulo.id, imageFiles);
         }
 
         navigate("/articulos");
@@ -193,7 +204,12 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
 
                     <div className="col-md-6">
                         <div className="col-md-12 mb-3">
-                        {/* aqui logica para cargar imagenes */}
+                            <input
+                                multiple
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                            />
                         </div>
                     </div>
                 </div>
