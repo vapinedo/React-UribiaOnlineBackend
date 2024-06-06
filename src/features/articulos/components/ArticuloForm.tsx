@@ -44,7 +44,7 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
     const [barrio, setBarrio] = useState<Barrio | null>(null);
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
     const [imageFiles, setImageFiles] = useState<FileList | null>(null);
-    const { createArticulo, updateArticulo, getArticulo, loading, error, uploadImageForArticulo } = useArticuloStore();
+    const { createArticulo, updateArticulo, getArticulo, loading, error } = useArticuloStore();
 
     const form = useForm<Articulo>({
         defaultValues: defaultValues,
@@ -86,17 +86,6 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
         }
     }, [barrios, fetchBarrios]);
 
-    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files) {
-            const filesArray = Array.from(event.target.files);
-
-            const urls = filesArray.map(file => URL.createObjectURL(file));
-
-            setImagePreviews(urls);
-            setImageFiles(event.target.files);
-        }
-    };
-
     const handleBarrioChange = (_event: any, value: Barrio & { id: string } | null) => {
         if (value && value.id) {
             const barrioRef = doc(db as Firestore, 'BARRIOS', value.id);
@@ -108,18 +97,25 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
         }
     };
 
+    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files) {
+            const filesArray = Array.from(event.target.files);
+
+            const urls = filesArray.map(file => URL.createObjectURL(file));
+
+            setImagePreviews(urls);
+            setImageFiles(event.target.files);
+        }
+    };
+
     const onSubmit = async (articulo: Articulo) => {
         const barrioRef = getValues('barrioRef');
         const updatedArticulo = { ...articulo, barrioRef };
 
         if (isEditMode) {
-            await updateArticulo(updatedArticulo);
+            await updateArticulo(updatedArticulo, imageFiles);
         } else {
-            await createArticulo(updatedArticulo);
-        }
-
-        if (imageFiles) {
-            await uploadImageForArticulo(updatedArticulo.id, imageFiles);
+            await createArticulo(updatedArticulo, imageFiles);
         }
 
         navigate("/articulos");
@@ -237,3 +233,4 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
         </BoxShadow>
     );
 }
+    

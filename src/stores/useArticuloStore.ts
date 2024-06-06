@@ -14,12 +14,10 @@ interface ArticuloStore {
     error: string | null;
     fetchArticulos: () => Promise<void>;
     getArticulo: (id: string) => Articulo | undefined;
-    createArticulo: (articulo: Articulo) => Promise<void>;
-    updateArticulo: (articulo: Articulo) => Promise<void>;
+    createArticulo: (articulo: Articulo, imageFiles: FileList | null) => Promise<void>;
+    updateArticulo: (articulo: Articulo, imageFiles: FileList | null) => Promise<void>;
     deleteArticulo: (id: string) => Promise<void>;
     getTotalRecords: () => Promise<void>;
-    uploadImageForArticulo: (articuloId: string, imageFiles: FileList) => Promise<void>;
-    deleteImagesForArticulo: (articuloId: string) => Promise<void>;
 }
 
 const firestore = getFirestore(firebaseApp);
@@ -94,10 +92,10 @@ const useArticuloStore = create<ArticuloStore>()(
                 return articulos.find(articulo => articulo.id === id);
             },
 
-            createArticulo: async (articulo: Articulo) => {
+            createArticulo: async (articulo: Articulo, imageFiles: FileList | null) => {
                 set({ loading: true, error: null });
                 try {
-                    await articuloService.createArticulo(articulo);
+                    await articuloService.createArticulo(articulo, imageFiles);
                     await get().fetchArticulos();
                 } catch (error: unknown) {
                     if (error instanceof Error) {
@@ -108,10 +106,10 @@ const useArticuloStore = create<ArticuloStore>()(
                 }
             },
 
-            updateArticulo: async (articulo: Articulo) => {
+            updateArticulo: async (articulo: Articulo, imageFiles: FileList | null) => {
                 set({ loading: true, error: null });
                 try {
-                    await articuloService.updateArticulo(articulo);
+                    await articuloService.updateArticulo(articulo, imageFiles);
                     await get().fetchArticulos();
                 } catch (error: unknown) {
                     if (error instanceof Error) {
@@ -144,36 +142,6 @@ const useArticuloStore = create<ArticuloStore>()(
                 } catch (error) {
                     set({ loading: false, error: 'Error al obtener el total de articulos' });
                     console.error(error);
-                }
-            },
-
-            uploadImageForArticulo: async (articuloId: string, imageFiles: FileList) => {
-                set({ loading: true, error: null });
-                try {
-                    Array.from(imageFiles).forEach(async (file) => {
-                        await articuloService.uploadImageForArticulo(articuloId, file);
-                    });
-                    await get().fetchArticulos();
-                } catch (error: unknown) {
-                    if (error instanceof Error) {
-                        set({ error: error.message, loading: false });
-                    } else {
-                        set({ error: String(error), loading: false });
-                    }
-                }
-            },
-
-            deleteImagesForArticulo: async (articuloId: string) => {
-                set({ loading: true, error: null });
-                try {
-                    await articuloService.deleteImagesForArticulo(articuloId);
-                    await get().fetchArticulos(); // Actualizar la lista de artículos después de eliminar las imágenes
-                } catch (error: unknown) {
-                    if (error instanceof Error) {
-                        set({ error: error.message, loading: false });
-                    } else {
-                        set({ error: String(error), loading: false });
-                    }
                 }
             },
         }),
