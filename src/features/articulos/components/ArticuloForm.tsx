@@ -97,11 +97,6 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
         }
     };
 
-    const handleImagesChange = (files: FileList) => {
-        console.log(files.length);
-        setImageFiles(files);
-    };
-
     const onSubmit = async (articulo: Articulo) => {
         const barrioRef = getValues('barrioRef');
         const updatedArticulo = { ...articulo, barrioRef };
@@ -200,7 +195,7 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
 
                     <div className="col-md-6">
                         <div className="col-md-12 mb-3">
-                            <ImageUploader onImagesChange={handleImagesChange} />
+                            <ImageUploader onImagesSelected={(images) => setImageFiles(images)} />
                         </div>
                     </div>
                 </div>

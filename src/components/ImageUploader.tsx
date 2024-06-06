@@ -1,64 +1,27 @@
-import { IconButton } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import React, { useState, ChangeEvent } from 'react';
+import { useState } from 'react';
+import { useDropzone } from 'react-dropzone';
 
-interface ImageUploaderProps {
-    onImagesChange: (files: FileList) => void;
-}
+const ImageUploader = ({ onImagesSelected }) => {
+    const [imagePreviews, setImagePreviews] = useState([]);
 
-const ImageUploader: React.FC<ImageUploaderProps> = ({ onImagesChange }) => {
-    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-    const [imageFiles, setImageFiles] = useState<FileList | null>(null);
-
-    const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files) {
-            const filesArray = Array.from(event.target.files);
-
-            const urls = filesArray.map(file => URL.createObjectURL(file));
-
-            setImagePreviews(urls);
-            setImageFiles(event.target.files);
-            onImagesChange(event.target.files);
-        }
+    const onDrop = (acceptedFiles) => {
+        const urls = acceptedFiles.map(file => URL.createObjectURL(file));
+        setImagePreviews(prevPreviews => [...prevPreviews, ...urls]);
+        onImagesSelected(acceptedFiles);
     };
 
-    const handleRemoveImage = (index: number) => {
-        setImagePreviews(prevPreviews => prevPreviews.filter((_, i) => i !== index));
-        if (imageFiles) {
-            const updatedFiles = Array.from(imageFiles).filter((_, i) => i !== index);
-            const dataTransfer = new DataTransfer();
-            updatedFiles.forEach(file => dataTransfer.items.add(file));
-            setImageFiles(dataTransfer.files);
-            onImagesChange(dataTransfer.files);
-        }
-    };
+    const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
     return (
-        <section>
-            <input
-                multiple
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-            />
-            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+        <div {...getRootProps()} style={{ border: '1px dashed #ccc', padding: '20px', textAlign: 'center', margin: '20px 0' }}>
+            <input {...getInputProps()} />
+            <p>Arrastra y suelta imágenes aquí, o haz clic para seleccionarlas.</p>
+            <div>
                 {imagePreviews.map((preview, index) => (
-                    <div key={index} style={{ position: 'relative', margin: '10px' }}>
-                        <img
-                            src={preview}
-                            alt={`Imagen ${index}`}
-                            style={{ width: index === 0 ? '200px' : '100px', height: index === 0 ? '200px' : '100px', objectFit: 'cover' }}
-                        />
-                        <IconButton
-                            style={{ position: 'absolute', top: 0, right: 0 }}
-                            onClick={() => handleRemoveImage(index)}
-                        >
-                            <DeleteIcon style={{ color: 'red' }} />
-                        </IconButton>
-                    </div>
+                    <img key={index} src={preview} alt={`Imagen ${index}`} style={{ width: '100px', height: '100px', marginRight: '10px' }} />
                 ))}
             </div>
-        </section>
+        </div>
     );
 };
 
