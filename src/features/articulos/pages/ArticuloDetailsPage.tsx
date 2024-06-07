@@ -45,6 +45,7 @@ export default function PrestamoDetailsPage() {
                     <div className="row">
                         <div className="col-md-6">
                             <p>{articulo?.precio}</p>
+                            <p>{barrio}</p>
                         </div>
                         <div className="col-md-6">
                             <img src={articulo.imagenURLs[0]} width={350} alt={articulo?.nombre} />
