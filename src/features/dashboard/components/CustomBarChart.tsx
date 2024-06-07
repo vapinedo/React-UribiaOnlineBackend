@@ -1,5 +1,4 @@
 import BoxShadow from '@app/layouts/BoxShadow';
-import React from 'react';
 import {
   BarChart,
   Bar,
