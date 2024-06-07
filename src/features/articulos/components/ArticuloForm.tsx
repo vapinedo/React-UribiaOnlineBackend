@@ -98,7 +98,10 @@ export default function ArticuloForm({ isEditMode }: ArticuloFormProps) {
     };
 
     const handleImagesSelected = (files: File[]) => {
-        setImageFiles(files);
+        const dataTransfer = new DataTransfer();
+        files.forEach(file => dataTransfer.items.add(file));
+        const newFileList = dataTransfer.files;
+        setImageFiles(newFileList);
     };
 
     const onSubmit = async (articulo: Articulo) => {

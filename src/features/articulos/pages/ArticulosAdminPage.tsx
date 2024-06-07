@@ -77,7 +77,7 @@ export default function ArticulosAdminPage() {
     )
   };
 
-  const handleDelete = async ({ row }) => {
+  const handleDelete = async ({ row }: { row: Articulo }) => {
     const text = `Vas a eliminar el articulo ${row.nombre}`;
     const { isConfirmed } = await dialogConfirm(text);
     if (isConfirmed) {
