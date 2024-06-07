@@ -34,12 +34,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImagesSelected }) => {
     });
 
     return (
-        <div>
+        <section>
             {imagePreviews.length === 0 && (
-                <div {...getRootProps()} style={{ border: '1px dashed #ccc', padding: '55px', textAlign: 'center', margin: '0 0' }}>
+                <article {...getRootProps()} style={{ border: '1px dashed #ccc', padding: '55px', textAlign: 'center', margin: '0 0' }}>
                     <input {...getInputProps()} />
                     <p>Arrastra y suelta imágenes aquí, o haz clic para seleccionarlas.</p>
-                </div>
+                </article>
             )}
             {imagePreviews.map((preview, index) => (
                 <div key={index} style={{ position: 'relative', display: 'inline-block' }}>
@@ -47,7 +47,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImagesSelected }) => {
                     <button type="button" onClick={() => removeImage(index)} style={{ position: 'absolute', top: 0, right: 0 }}>Eliminar</button>
                 </div>
             ))}
-        </div>
+        </section>
     );
 };
 
