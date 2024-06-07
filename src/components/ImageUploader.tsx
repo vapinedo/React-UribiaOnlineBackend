@@ -44,7 +44,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImagesSelected }) => {
             {imagePreviews.map((preview, index) => (
                 <div key={index} style={{ position: 'relative', display: 'inline-block' }}>
                     <img src={preview} alt={`Imagen ${index}`} style={{ width: '100px', height: '100px', marginRight: '10px' }} />
-                    <button type="button" onClick={() => removeImage(index)} style={{ position: 'absolute', top: 0, right: 0 }}>Eliminar</button>
+                    <i className='bx bx-x-circle' onClick={() => removeImage(index)} style={{ color: 'gray', fontSize: '28px', cursor: 'pointer', position: 'absolute', top: 0, right: 0 }}></i>
                 </div>
             ))}
         </section>
