@@ -16,6 +16,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImagesSelected }) => {
         onImagesSelected(acceptedFiles);
     };
 
+    const removeAllImages = () => {
+        setImagePreviews([]);
+        setImageFiles([]);
+        onImagesSelected([]);
+    };
+
     const removeImage = (index: number) => {
         const updatedPreviews = [...imagePreviews];
         updatedPreviews.splice(index, 1);
@@ -43,10 +49,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImagesSelected }) => {
             )}
             {imagePreviews.map((preview, index) => (
                 <div key={index} style={{ position: 'relative', display: 'inline-block' }}>
-                    <img src={preview} alt={`Imagen ${index}`} style={{ width: '100px', height: '100px', marginRight: '10px' }} />
+                    <img src={preview} alt={`Imagen ${index}`} style={{ width: '100px', height: '100px', marginRight: '10px', cursor: 'pointer' }} />
                     <i className='bx bx-x-circle' onClick={() => removeImage(index)} style={{ color: 'gray', fontSize: '28px', cursor: 'pointer', position: 'absolute', top: 0, right: 0 }}></i>
                 </div>
             ))}
+            {imagePreviews.length > 0 && (
+                <button onClick={removeAllImages} style={{ marginTop: '10px' }}>Eliminar todas las imágenes</button>
+            )}
         </section>
     );
 };
