@@ -1,3 +1,4 @@
+import { Button } from '@mui/material';
 import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
@@ -41,20 +42,22 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImagesSelected }) => {
 
     return (
         <section>
-            {imagePreviews.length === 0 && (
-                <article {...getRootProps()} style={{ cursor: 'pointer', border: '1px dashed #ccc', padding: '55px', textAlign: 'center', margin: '0 0' }}>
-                    <input {...getInputProps()} />
-                    <p>Arrastra y suelta imágenes aquí, o haz clic para seleccionarlas.</p>
-                </article>
-            )}
-            {imagePreviews.map((preview, index) => (
-                <div key={index} style={{ position: 'relative', display: 'inline-block' }}>
-                    <img src={preview} alt={`Imagen ${index}`} style={{ width: '100px', height: '100px', marginRight: '10px', cursor: 'pointer' }} />
-                    <i className='bx bx-x-circle' onClick={() => removeImage(index)} style={{ color: 'gray', fontSize: '28px', cursor: 'pointer', position: 'absolute', top: 0, right: 0 }}></i>
-                </div>
-            ))}
+            <div>
+                {imagePreviews.length === 0 && (
+                    <article {...getRootProps()} style={{ cursor: 'pointer', border: '1px dashed #ccc', padding: '55px', textAlign: 'center', margin: '0 0' }}>
+                        <input {...getInputProps()} />
+                        <p>Arrastra y suelta imágenes aquí, o haz clic para seleccionarlas.</p>
+                    </article>
+                )}
+                {imagePreviews.map((preview, index) => (
+                    <div key={index} style={{ position: 'relative', display: 'inline-block' }}>
+                        <img src={preview} alt={`Imagen ${index}`} style={{ width: '100px', height: '100px', marginRight: '10px', cursor: 'pointer' }} />
+                        <i className='bx bx-x-circle' onClick={() => removeImage(index)} style={{ color: 'gray', fontSize: '28px', cursor: 'pointer', position: 'absolute', top: 0, right: 0 }}></i>
+                    </div>
+                ))}
+            </div>
             {imagePreviews.length > 0 && (
-                <button onClick={removeAllImages} style={{ marginTop: '10px' }}>Eliminar todas las imágenes</button>
+                <Button variant='contained' color='error' onClick={removeAllImages} style={{ marginTop: '10px' }}>Eliminar todas las imágenes</Button>
             )}
         </section>
     );
