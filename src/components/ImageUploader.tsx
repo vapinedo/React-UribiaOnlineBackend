@@ -36,7 +36,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImagesSelected }) => {
     return (
         <section>
             {imagePreviews.length === 0 && (
-                <article {...getRootProps()} style={{ border: '1px dashed #ccc', padding: '55px', textAlign: 'center', margin: '0 0' }}>
+                <article {...getRootProps()} style={{ cursor: 'pointer', border: '1px dashed #ccc', padding: '55px', textAlign: 'center', margin: '0 0' }}>
                     <input {...getInputProps()} />
                     <p>Arrastra y suelta imágenes aquí, o haz clic para seleccionarlas.</p>
                 </article>
