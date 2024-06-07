@@ -6,25 +6,26 @@ interface ImageUploaderProps {
 }
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({ onImagesSelected }) => {
-    const [mainImage, setMainImage] = useState<File | null>(null);
-    const [thumbnailImages, setThumbnailImages] = useState<File[]>([]);
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
 
     const onDrop = (acceptedFiles: File[]) => {
-        if (acceptedFiles.length > 0) {
-            setMainImage(acceptedFiles[0]);
-            setThumbnailImages(acceptedFiles.slice(1));
-            onImagesSelected(acceptedFiles);
-        }
+        const urls = acceptedFiles.map(file => URL.createObjectURL(file));
+        setImagePreviews(prevPreviews => [...prevPreviews, ...urls]);
+        setImageFiles(prevFiles => [...prevFiles, ...acceptedFiles]);
+        onImagesSelected(imageFiles);
     };
 
     const removeImage = (index: number) => {
-        if (index === 0) {
-            setMainImage(null);
-        } else {
-            const updatedThumbnails = [...thumbnailImages];
-            updatedThumbnails.splice(index - 1, 1);
-            setThumbnailImages(updatedThumbnails);
-        }
+        const updatedPreviews = [...imagePreviews];
+        updatedPreviews.splice(index, 1);
+        setImagePreviews(updatedPreviews);
+
+        const updatedFiles = [...imageFiles];
+        updatedFiles.splice(index, 1);
+        setImageFiles(updatedFiles);
+
+        onImagesSelected(updatedFiles);
     };
 
     const { getRootProps, getInputProps } = useDropzone({ onDrop });
@@ -35,21 +36,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImagesSelected }) => {
                 <input {...getInputProps()} />
                 <p>Arrastra y suelta imágenes aquí, o haz clic para seleccionarlas.</p>
             </div>
-            {mainImage && (
-                <div style={{ marginBottom: '20px' }}>
-                    <h4>Imagen Principal</h4>
-                    <img src={URL.createObjectURL(mainImage)} alt="Imagen principal" style={{ width: '300px', height: '300px', objectFit: 'cover' }} />
-                    <button type="button" onClick={() => removeImage(0)}>Eliminar</button>
+            {imagePreviews.map((preview, index) => (
+                <div key={index} style={{ position: 'relative', display: 'inline-block' }}>
+                    <img src={preview} alt={`Imagen ${index}`} style={{ width: '100px', height: '100px', marginRight: '10px' }} />
+                    <button type="button" onClick={() => removeImage(index)} style={{ position: 'absolute', top: 0, right: 0 }}>Eliminar</button>
                 </div>
-            )}
-            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                {thumbnailImages.map((file, index) => (
-                    <div key={index} style={{ marginRight: '10px', marginBottom: '10px' }}>
-                        <img src={URL.createObjectURL(file)} alt={`Miniatura ${index}`} style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
-                        <button type="button" onClick={() => removeImage(index + 1)}>Eliminar</button>
-                    </div>
-                ))}
-            </div>
+            ))}
         </div>
     );
 };
