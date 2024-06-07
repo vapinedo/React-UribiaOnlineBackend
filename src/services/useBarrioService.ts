@@ -1,8 +1,10 @@
-import db from '@firebaseConfig';
+import firebaseConfig from '@firebaseConfig';
 import { getDocs, collection } from "firebase/firestore";
 import { Barrio } from "@features/barrios/models/Barrio";
 import { AutocompleteOption } from '@models/AutocompleteOption';
 import FirestoreGenericService from '@services/FirestoreGenericService';
+
+const { db } = firebaseConfig;
 
 const COLLECTION = "BARRIOS";
 const { getAllDocuments, getDocumentById, createDocument, updateDocument, deleteDocument, getTotalRecords } = FirestoreGenericService<Barrio>(COLLECTION);
