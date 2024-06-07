@@ -11,9 +11,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImagesSelected }) => {
 
     const onDrop = (acceptedFiles: File[]) => {
         const urls = acceptedFiles.map(file => URL.createObjectURL(file));
-        setImagePreviews(prevPreviews => [...prevPreviews, ...urls]);
-        setImageFiles(prevFiles => [...prevFiles, ...acceptedFiles]);
-        onImagesSelected(imageFiles);
+        setImagePreviews(urls);
+        setImageFiles(acceptedFiles);
+        onImagesSelected(acceptedFiles);
     };
 
     const removeImage = (index: number) => {
@@ -28,14 +28,19 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImagesSelected }) => {
         onImagesSelected(updatedFiles);
     };
 
-    const { getRootProps, getInputProps } = useDropzone({ onDrop });
+    const { getRootProps, getInputProps } = useDropzone({
+        onDrop,
+        disabled: imageFiles.length > 0 // Deshabilitar la funcionalidad de dropzone si hay imágenes cargadas
+    });
 
     return (
         <div>
-            <div {...getRootProps()} style={{ border: '1px dashed #ccc', padding: '20px', textAlign: 'center', margin: '20px 0' }}>
-                <input {...getInputProps()} />
-                <p>Arrastra y suelta imágenes aquí, o haz clic para seleccionarlas.</p>
-            </div>
+            {imagePreviews.length === 0 && (
+                <div {...getRootProps()} style={{ border: '1px dashed #ccc', padding: '20px', textAlign: 'center', margin: '20px 0' }}>
+                    <input {...getInputProps()} />
+                    <p>Arrastra y suelta imágenes aquí, o haz clic para seleccionarlas.</p>
+                </div>
+            )}
             {imagePreviews.map((preview, index) => (
                 <div key={index} style={{ position: 'relative', display: 'inline-block' }}>
                     <img src={preview} alt={`Imagen ${index}`} style={{ width: '100px', height: '100px', marginRight: '10px' }} />
