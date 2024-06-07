@@ -37,7 +37,7 @@ export default function FirestoreGenericService<T>(COLLECTION: string) {
         return document;
     };
 
-    const createDocument = async (document: T & { id?: string }, imageFiles: FileList | null) => {
+    const createDocument = async (document: T & { id?: string }, imageFiles?: FileList | null) => {
         try {
             if (!document.id) {
                 document.id = createUuid();
@@ -59,7 +59,7 @@ export default function FirestoreGenericService<T>(COLLECTION: string) {
         }
     };
 
-    const updateDocument = async (document: T & { id: string }, imageFiles: FileList | null) => {
+    const updateDocument = async (document: T & { id: string }, imageFiles?: FileList | null) => {
         const docRef = doc(db, COLLECTION, document.id);
         try {
             await runTransaction(db, async (transaction) => {
