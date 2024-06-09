@@ -59,7 +59,7 @@ export default function LoginPage() {
          }}>
             <BoxShadow>
                 <h2 className="text-center">
-                    Loan Tracker
+                    Uribia Online
                 </h2>
 
                 <form onSubmit={handleSubmit(onSubmit, onError)} noValidate>
