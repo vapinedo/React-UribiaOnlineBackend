@@ -9,7 +9,7 @@ export default function App() {
   return (
     <React.Fragment>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
-        <BrowserRouter>
+        <BrowserRouter basename="/React-UribiaOnlineBackend">
           <AppRouter />
         </BrowserRouter>
       </LocalizationProvider>
