@@ -2,7 +2,7 @@
   "name": "uribia-online-backend",
   "homepage": "https://vapinedo.github.io/React-UribiaOnlineBackend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "yarn vite",
