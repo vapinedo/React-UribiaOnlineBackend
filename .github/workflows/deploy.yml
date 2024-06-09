@@ -1,5 +1,7 @@
-name: Deploy to Production
+name: Despliegue a produccion
 
+
+# el flujo se ejecuta cuando subimos cambios a main ( actualmente solo mediante pull request )
 on:
   push:
     branches:
@@ -13,15 +15,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Aquí puedes agregar pasos adicionales para construir tu aplicación, por ejemplo, si usas npm:
-      # - name: Install dependencies
-      #   run: npm install
+      - name: Install dependencies
+        run: yarn install
 
-      # - name: Build
-      #   run: npm run build
+      - name: Build
+        run: yarn build
 
-      # Agregar aquí los comandos necesarios para desplegar tu aplicación. Por ejemplo, si usas GitHub Pages:
-      # - name: Deploy to GitHub Pages
-      #   uses: JamesIves/github-pages-deploy-action@releases/v3
-      #   with:
-      #     ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN_GH_PAGES }}
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN_GH_PAGES }}
+          BRANCH: gh-pages # Cambia esto al nombre de la rama en la que deseas desplegar tu aplicación (por ejemplo, main)
+          FOLDER: build # Cambia esto al directorio donde se encuentra tu aplicación compilada
